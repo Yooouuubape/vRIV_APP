@@ -2,6 +2,7 @@ package com.example.ui.screens.company
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -19,13 +20,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.Search
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -37,16 +31,21 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.data.DirectDialog
 import com.example.data.VryvRepository
+import com.example.ui.components.VryvIcons
+import com.example.ui.components.VryvInputField
+import com.example.ui.components.VryvSubScreenHeader
 import com.example.ui.theme.VryvBg
 import com.example.ui.theme.VryvCard
-import com.example.ui.theme.VryvInputBg
+import com.example.ui.theme.VryvLime
+import com.example.ui.theme.VryvLine
 import com.example.ui.theme.VryvPink
 import com.example.ui.theme.VryvTextMuted
 import com.example.ui.theme.VryvTextPrimary
@@ -78,70 +77,33 @@ fun MessagesListScreen(
             .fillMaxSize()
             .background(VryvBg)
     ) {
-        // Header
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 8.dp, vertical = 8.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            IconButton(onClick = onBackClick) {
-                Icon(
-                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                    contentDescription = "Назад",
-                    tint = VryvTextPrimary
-                )
-            }
-            Text(
-                text = "Сообщения",
-                color = VryvTextPrimary,
-                fontSize = 20.sp,
-                fontWeight = FontWeight.Bold,
-                modifier = Modifier.padding(start = 8.dp)
-            )
-        }
+        VryvSubScreenHeader(
+            title = "Сообщения",
+            onBackClick = onBackClick
+        )
 
-        // Search Bar
-        Box(modifier = Modifier.padding(horizontal = 16.dp, vertical = 6.dp)) {
-            OutlinedTextField(
+        Box(modifier = Modifier.padding(horizontal = 20.dp, vertical = 6.dp)) {
+            VryvInputField(
                 value = searchQuery,
                 onValueChange = { searchQuery = it },
-                placeholder = { Text("Поиск по диалогам...", color = VryvTextMuted, fontSize = 14.sp) },
-                leadingIcon = {
-                    Icon(
-                        imageVector = Icons.Default.Search,
-                        contentDescription = null,
-                        tint = VryvTextSecondary,
-                        modifier = Modifier.size(18.dp)
-                    )
-                },
-                shape = RoundedCornerShape(22.dp),
-                colors = OutlinedTextFieldDefaults.colors(
-                    focusedContainerColor = VryvCard,
-                    unfocusedContainerColor = VryvCard,
-                    focusedBorderColor = VryvPink,
-                    unfocusedBorderColor = Color.Transparent,
-                    focusedTextColor = VryvTextPrimary,
-                    unfocusedTextColor = VryvTextPrimary
-                ),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(48.dp)
+                placeholder = "Поиск по диалогам...",
+                leadingIcon = VryvIcons.Search
             )
         }
 
         LazyColumn(
             modifier = Modifier.fillMaxSize(),
-            contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp)
+            contentPadding = PaddingValues(horizontal = 20.dp, vertical = 10.dp)
         ) {
             if (unreadDialogs.isNotEmpty()) {
                 item {
                     Text(
-                        text = "Непрочитанные · ${unreadDialogs.size}",
+                        text = "НЕПРОЧИТАННЫЕ · ${unreadDialogs.size}",
                         color = VryvTextSecondary,
-                        fontSize = 13.sp,
-                        fontWeight = FontWeight.SemiBold,
-                        modifier = Modifier.padding(bottom = 8.dp)
+                        fontSize = 11.sp,
+                        fontWeight = FontWeight.Bold,
+                        letterSpacing = 0.8.sp,
+                        modifier = Modifier.padding(start = 4.dp, bottom = 8.dp)
                     )
                 }
                 items(unreadDialogs) { dialog ->
@@ -155,13 +117,14 @@ fun MessagesListScreen(
 
             if (earlierDialogs.isNotEmpty()) {
                 item {
-                    Spacer(modifier = Modifier.height(14.dp))
+                    Spacer(modifier = Modifier.height(10.dp))
                     Text(
-                        text = "Ранее",
+                        text = "РАНЕЕ",
                         color = VryvTextSecondary,
-                        fontSize = 13.sp,
-                        fontWeight = FontWeight.SemiBold,
-                        modifier = Modifier.padding(bottom = 8.dp)
+                        fontSize = 11.sp,
+                        fontWeight = FontWeight.Bold,
+                        letterSpacing = 0.8.sp,
+                        modifier = Modifier.padding(start = 4.dp, bottom = 8.dp)
                     )
                 }
                 items(earlierDialogs) { dialog ->
@@ -178,38 +141,57 @@ fun MessagesListScreen(
 
 @Composable
 fun DialogRowItem(
-    dialog: com.example.data.DirectDialog,
+    dialog: DirectDialog,
     onClick: () -> Unit
 ) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(16.dp))
+            .clip(RoundedCornerShape(18.dp))
             .background(VryvCard)
+            .border(
+                width = 1.dp,
+                color = if (dialog.unreadCount > 0) VryvPink.copy(alpha = 0.35f) else VryvLine,
+                shape = RoundedCornerShape(18.dp)
+            )
             .clickable { onClick() }
             .padding(14.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Image(
-            painter = painterResource(id = dialog.otherUser.avatarRes),
-            contentDescription = dialog.otherUser.name,
-            modifier = Modifier
-                .size(48.dp)
-                .clip(CircleShape)
-        )
+        Box {
+            Image(
+                painter = painterResource(id = dialog.otherUser.avatarRes),
+                contentDescription = dialog.otherUser.name,
+                contentScale = ContentScale.Crop,
+                modifier = Modifier
+                    .size(48.dp)
+                    .clip(CircleShape)
+            )
+            if (dialog.otherUser.isOnline) {
+                Box(
+                    modifier = Modifier
+                        .size(11.dp)
+                        .clip(CircleShape)
+                        .background(VryvLime)
+                        .border(2.dp, VryvCard, CircleShape)
+                        .align(Alignment.BottomEnd)
+                )
+            }
+        }
 
-        Spacer(modifier = Modifier.width(14.dp))
+        Spacer(modifier = Modifier.width(12.dp))
 
         Column(modifier = Modifier.weight(1f)) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
                     text = dialog.otherUser.name,
                     color = VryvTextPrimary,
                     fontSize = 15.sp,
-                    fontWeight = FontWeight.SemiBold
+                    fontWeight = FontWeight.Bold
                 )
                 Text(
                     text = dialog.time,
@@ -222,19 +204,28 @@ fun DialogRowItem(
                 text = dialog.lastMessage,
                 color = if (dialog.unreadCount > 0) VryvTextPrimary else VryvTextSecondary,
                 fontSize = 13.sp,
+                fontWeight = if (dialog.unreadCount > 0) FontWeight.SemiBold else FontWeight.Normal,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
             )
         }
 
         if (dialog.unreadCount > 0) {
-            Spacer(modifier = Modifier.width(8.dp))
+            Spacer(modifier = Modifier.width(10.dp))
             Box(
                 modifier = Modifier
-                    .size(8.dp)
+                    .size(20.dp)
                     .clip(CircleShape)
-                    .background(VryvPink)
-            )
+                    .background(VryvPink),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = "${dialog.unreadCount}",
+                    color = Color.White,
+                    fontSize = 11.sp,
+                    fontWeight = FontWeight.Bold
+                )
+            }
         }
     }
 }

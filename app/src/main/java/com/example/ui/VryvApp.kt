@@ -8,8 +8,8 @@ import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -23,12 +23,7 @@ import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.filled.Person
-import androidx.compose.material.icons.filled.Store
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Scaffold
@@ -46,7 +41,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -57,7 +52,11 @@ import com.example.ui.components.BusinessTab
 import com.example.ui.components.InviteFriendsSheet
 import com.example.ui.components.ReportBottomSheet
 import com.example.ui.components.UserTab
+import com.example.ui.components.VryvButton
+import com.example.ui.components.VryvButtonStyle
 import com.example.ui.components.VryvBusinessTabBar
+import com.example.ui.components.VryvIcons
+import com.example.ui.components.VryvTopToast
 import com.example.ui.components.VryvUserTabBar
 import com.example.ui.screens.auth.EmailCodeVerificationScreen
 import com.example.ui.screens.auth.ForgotPasswordScreen
@@ -88,15 +87,14 @@ import com.example.ui.screens.profile.NotificationsCenterScreen
 import com.example.ui.screens.profile.ProfileScreen
 import com.example.ui.screens.profile.SettingsScreen
 import com.example.ui.screens.swipes.SwipesScreen
+import com.example.ui.theme.InterFontFamily
 import com.example.ui.theme.VryvBg
 import com.example.ui.theme.VryvCard
-import com.example.ui.theme.VryvCardElevated
 import com.example.ui.theme.VryvLime
 import com.example.ui.theme.VryvLine
 import com.example.ui.theme.VryvPink
 import com.example.ui.theme.VryvTextMuted
 import com.example.ui.theme.VryvTextPrimary
-import com.example.ui.theme.VryvTextSecondary
 import kotlinx.coroutines.delay
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -119,7 +117,7 @@ fun VryvApp(
     val backStack = remember { mutableStateListOf<String>() }
 
     // Auth screen navigation
-    var authScreen by remember { mutableStateOf("welcome") } // "welcome", "login", "register", "code_verification", "forgot_password"
+    var authScreen by remember { mutableStateOf("welcome") }
 
     // Company screen filter
     var companyFilterEventId by remember { mutableStateOf<String?>(null) }
@@ -134,7 +132,7 @@ fun VryvApp(
     var showRoleSwitcherSheet by remember { mutableStateOf(false) }
     var showCreateCompanySheet by remember { mutableStateOf(false) }
     var inviteEventId by remember { mutableStateOf<String?>(null) }
-    var reportTarget by remember { mutableStateOf<Pair<String, String>?>(null) } // type to title
+    var reportTarget by remember { mutableStateOf<Pair<String, String>?>(null) }
 
     // Auto-clear toast
     LaunchedEffect(toastMessage) {
@@ -146,13 +144,13 @@ fun VryvApp(
 
     val currentScreen = backStack.lastOrNull()
 
-    // Handle Android system back button
     BackHandler(enabled = backStack.isNotEmpty()) {
         backStack.removeAt(backStack.lastIndex)
     }
 
     Scaffold(
         modifier = modifier.fillMaxSize(),
+        containerColor = VryvBg,
         bottomBar = {
             if (isLoggedIn && onboardingCompleted && currentScreen == null && (!isBusinessMode || user.venueId != null)) {
                 if (isBusinessMode) {
@@ -179,7 +177,7 @@ fun VryvApp(
                 when (authScreen) {
                     "welcome" -> WelcomeScreen(
                         repository = repository,
-                        onContinueWithGoogle = { /* user state updated in google account picker */ },
+                        onContinueWithGoogle = { },
                         onLoginWithEmail = { authScreen = "login" },
                         onGoToRegister = { authScreen = "register" },
                         onGuestEntry = { repository.startGuestSession() }
@@ -187,7 +185,7 @@ fun VryvApp(
                     "login" -> LoginScreen(
                         repository = repository,
                         onBackClick = { authScreen = "welcome" },
-                        onSuccessLogin = { /* handled */ },
+                        onSuccessLogin = { },
                         onGoToRegister = { authScreen = "register" },
                         onForgotPasswordClick = { authScreen = "forgot_password" }
                     )
@@ -200,7 +198,7 @@ fun VryvApp(
                     "code_verification" -> EmailCodeVerificationScreen(
                         repository = repository,
                         onBackClick = { authScreen = "register" },
-                        onVerified = { /* user is registered and logged in */ }
+                        onVerified = { }
                     )
                     "forgot_password" -> ForgotPasswordScreen(
                         repository = repository,
@@ -211,10 +209,9 @@ fun VryvApp(
             } else if (!onboardingCompleted) {
                 OnboardingScreen(
                     repository = repository,
-                    onComplete = { /* completed */ }
+                    onComplete = { }
                 )
             } else {
-                // Main Authenticated View
                 if (currentScreen != null) {
                     when {
                         currentScreen.startsWith("event_") -> {
@@ -312,7 +309,6 @@ fun VryvApp(
                         }
                     }
                 } else {
-                    // Bottom Navigation Tabs
                     if (isBusinessMode) {
                         if (user.venueId == null) {
                             if (showVenueWizard) {
@@ -334,7 +330,7 @@ fun VryvApp(
                                 BusinessTab.OVERVIEW -> BusinessCabinetScreen(
                                     repository = repository,
                                     onCreateEventClick = { backStack.add("biz_create_event") },
-                                    onSwitchToPersonalClick = { repository.setBusinessMode(false) },
+                                    onSwitchToPersonalClick = { showRoleSwitcherSheet = true },
                                     onEventClick = { evId -> backStack.add("event_$evId") }
                                 )
                                 BusinessTab.EVENTS -> BusinessEventsScreen(
@@ -392,7 +388,7 @@ fun VryvApp(
                 }
             }
 
-            // Top Toast Banner
+            // Top Toast Banner matching prototype .toast
             AnimatedVisibility(
                 visible = toastMessage != null,
                 enter = slideInVertically(initialOffsetY = { -it }) + fadeIn(),
@@ -400,23 +396,13 @@ fun VryvApp(
                 modifier = Modifier
                     .align(Alignment.TopCenter)
                     .statusBarsPadding()
-                    .padding(top = 12.dp, start = 16.dp, end = 16.dp)
+                    .padding(top = 8.dp, start = 16.dp, end = 16.dp)
             ) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clip(RoundedCornerShape(16.dp))
-                        .background(VryvCardElevated)
-                        .padding(horizontal = 16.dp, vertical = 12.dp),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        text = toastMessage ?: "",
-                        color = Color.White,
-                        fontSize = 13.5.sp,
-                        fontWeight = FontWeight.SemiBold
-                    )
-                }
+                VryvTopToast(
+                    title = toastMessage ?: "",
+                    subtitle = "Изменения сохранены в профиле",
+                    isSuccess = true
+                )
             }
         }
     }
@@ -425,19 +411,39 @@ fun VryvApp(
     if (showRoleSwitcherSheet) {
         ModalBottomSheet(
             onDismissRequest = { showRoleSwitcherSheet = false },
-            sheetState = rememberModalBottomSheetState(),
-            containerColor = VryvCard
+            sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
+            containerColor = Color(0xFF16161C),
+            dragHandle = null
         ) {
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(22.dp)
+                    .padding(horizontal = 20.dp, vertical = 14.dp)
             ) {
+                Box(
+                    modifier = Modifier
+                        .width(40.dp)
+                        .height(4.dp)
+                        .clip(RoundedCornerShape(2.dp))
+                        .background(Color(0x38FFFFFF))
+                        .align(Alignment.CenterHorizontally)
+                )
+                Spacer(modifier = Modifier.height(14.dp))
+
                 Text(
-                    text = "Переключение профиля",
+                    text = "Выбрать профиль",
                     color = VryvTextPrimary,
-                    fontSize = 18.sp,
+                    fontFamily = InterFontFamily,
+                    fontSize = 20.sp,
                     fontWeight = FontWeight.Bold
+                )
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = "Ты можешь переключаться между личным аккаунтом и кабинетом заведения в один тап",
+                    color = VryvTextMuted,
+                    fontFamily = InterFontFamily,
+                    fontSize = 13.sp,
+                    lineHeight = 18.sp
                 )
                 Spacer(modifier = Modifier.height(14.dp))
 
@@ -445,8 +451,13 @@ fun VryvApp(
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .clip(RoundedCornerShape(14.dp))
-                        .background(if (!isBusinessMode) Color(0x22FF1D8E) else VryvCardElevated)
+                        .clip(RoundedCornerShape(18.dp))
+                        .background(if (!isBusinessMode) Color(0x1FFF1D8E) else VryvCard)
+                        .border(
+                            1.dp,
+                            if (!isBusinessMode) Color(0x8CFF1D8E) else VryvLine,
+                            RoundedCornerShape(18.dp)
+                        )
                         .clickable {
                             repository.setBusinessMode(false)
                             showRoleSwitcherSheet = false
@@ -457,17 +468,46 @@ fun VryvApp(
                     Image(
                         painter = painterResource(id = user.avatarRes),
                         contentDescription = null,
+                        contentScale = ContentScale.Crop,
                         modifier = Modifier
-                            .size(44.dp)
+                            .size(48.dp)
                             .clip(CircleShape)
                     )
                     Spacer(modifier = Modifier.width(12.dp))
                     Column(modifier = Modifier.weight(1f)) {
-                        Text(text = user.name, color = VryvTextPrimary, fontSize = 15.sp, fontWeight = FontWeight.Bold)
-                        Text(text = "Личный профиль · @${user.username}", color = VryvTextSecondary, fontSize = 12.sp)
+                        Text(
+                            text = user.name,
+                            color = VryvTextPrimary,
+                            fontFamily = InterFontFamily,
+                            fontSize = 15.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                        Text(
+                            text = "@${user.username} · Личный профиль",
+                            color = VryvTextMuted,
+                            fontFamily = InterFontFamily,
+                            fontSize = 12.sp
+                        )
                     }
-                    if (!isBusinessMode) {
-                        Icon(Icons.Default.Check, contentDescription = null, tint = VryvPink)
+                    Box(
+                        modifier = Modifier
+                            .size(26.dp)
+                            .clip(CircleShape)
+                            .background(if (!isBusinessMode) VryvPink else Color.Transparent)
+                            .then(
+                                if (isBusinessMode) Modifier.border(1.5.dp, Color(0x38FFFFFF), CircleShape)
+                                else Modifier
+                            ),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        if (!isBusinessMode) {
+                            Icon(
+                                imageVector = VryvIcons.Check,
+                                contentDescription = null,
+                                tint = Color.White,
+                                modifier = Modifier.size(14.dp)
+                            )
+                        }
                     }
                 }
 
@@ -477,8 +517,13 @@ fun VryvApp(
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .clip(RoundedCornerShape(14.dp))
-                        .background(if (isBusinessMode) Color(0x22C7FF28) else VryvCardElevated)
+                        .clip(RoundedCornerShape(18.dp))
+                        .background(if (isBusinessMode) Color(0x1EC7FF28) else VryvCard)
+                        .border(
+                            1.dp,
+                            if (isBusinessMode) Color(0x8CC7FF28) else VryvLine,
+                            RoundedCornerShape(18.dp)
+                        )
                         .clickable {
                             repository.setBusinessMode(true)
                             showRoleSwitcherSheet = false
@@ -486,31 +531,69 @@ fun VryvApp(
                         .padding(14.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Box(
+                    Image(
+                        painter = painterResource(id = R.drawable.rooftop),
+                        contentDescription = null,
+                        contentScale = ContentScale.Crop,
                         modifier = Modifier
-                            .size(44.dp)
-                            .clip(CircleShape)
-                            .background(VryvLime.copy(alpha = 0.2f)),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Icon(Icons.Default.Store, contentDescription = null, tint = VryvLime, modifier = Modifier.size(24.dp))
-                    }
+                            .size(48.dp)
+                            .clip(RoundedCornerShape(14.dp))
+                    )
                     Spacer(modifier = Modifier.width(12.dp))
                     Column(modifier = Modifier.weight(1f)) {
-                        Text(text = venue.name, color = VryvTextPrimary, fontSize = 15.sp, fontWeight = FontWeight.Bold)
-                        Text(text = "Владелец заведения · ${venue.category}", color = VryvTextSecondary, fontSize = 12.sp)
+                        Text(
+                            text = venue.name,
+                            color = VryvTextPrimary,
+                            fontFamily = InterFontFamily,
+                            fontSize = 15.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                        Text(
+                            text = "${venue.category} · подтверждён · 6 активных событий",
+                            color = VryvTextMuted,
+                            fontFamily = InterFontFamily,
+                            fontSize = 12.sp
+                        )
                     }
-                    if (isBusinessMode) {
-                        Icon(Icons.Default.Check, contentDescription = null, tint = VryvLime)
+                    Box(
+                        modifier = Modifier
+                            .size(26.dp)
+                            .clip(CircleShape)
+                            .background(if (isBusinessMode) VryvLime else Color.Transparent)
+                            .then(
+                                if (!isBusinessMode) Modifier.border(1.5.dp, Color(0x38FFFFFF), CircleShape)
+                                else Modifier
+                            ),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        if (isBusinessMode) {
+                            Icon(
+                                imageVector = VryvIcons.Check,
+                                contentDescription = null,
+                                tint = VryvBg,
+                                modifier = Modifier.size(14.dp)
+                            )
+                        }
                     }
                 }
 
-                Spacer(modifier = Modifier.height(20.dp))
+                Spacer(modifier = Modifier.height(14.dp))
+
+                VryvButton(
+                    text = "+ Добавить ещё заведение",
+                    onClick = {
+                        showRoleSwitcherSheet = false
+                        repository.setBusinessMode(true)
+                        showVenueWizard = true
+                    },
+                    style = VryvButtonStyle.SECONDARY
+                )
+
+                Spacer(modifier = Modifier.height(10.dp))
             }
         }
     }
 
-    // Create Company Sheet
     if (showCreateCompanySheet) {
         CreateCompanySheet(
             repository = repository,
@@ -522,7 +605,6 @@ fun VryvApp(
         )
     }
 
-    // Friend Invitation Sheet
     if (inviteEventId != null) {
         InviteFriendsSheet(
             eventId = inviteEventId!!,
@@ -531,7 +613,6 @@ fun VryvApp(
         )
     }
 
-    // Report Bottom Sheet
     if (reportTarget != null) {
         val (type, title) = reportTarget!!
         ReportBottomSheet(
@@ -542,7 +623,6 @@ fun VryvApp(
         )
     }
 
-    // Guest Auth Prompt
     if (guestAuthPrompt != null) {
         GuestAuthBottomSheet(
             actionDescription = guestAuthPrompt!!,

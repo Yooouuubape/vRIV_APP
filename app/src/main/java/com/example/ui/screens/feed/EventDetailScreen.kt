@@ -22,23 +22,10 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.Bookmark
-import androidx.compose.material.icons.filled.BookmarkBorder
-import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.filled.Directions
-import androidx.compose.material.icons.filled.Flag
-import androidx.compose.material.icons.filled.Group
-import androidx.compose.material.icons.filled.LocationOn
-import androidx.compose.material.icons.filled.PersonAdd
 import androidx.compose.material.icons.filled.QrCode
-import androidx.compose.material.icons.filled.Schedule
-import androidx.compose.material.icons.filled.Share
-import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
@@ -57,16 +44,23 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.R
 import com.example.data.EventStatus
 import com.example.data.VryvRepository
 import com.example.ui.components.StatusBadge
+import com.example.ui.components.VryvAvatarStack
+import com.example.ui.components.VryvButton
+import com.example.ui.components.VryvButtonVariant
+import com.example.ui.components.VryvChip
+import com.example.ui.components.VryvIconButton
+import com.example.ui.components.VryvIcons
+import com.example.ui.components.VryvTag
+import com.example.ui.components.VryvTagVariant
+import com.example.ui.theme.InterFontFamily
 import com.example.ui.theme.VryvBg
 import com.example.ui.theme.VryvCard
-import com.example.ui.theme.VryvCardElevated
 import com.example.ui.theme.VryvLime
 import com.example.ui.theme.VryvLine
 import com.example.ui.theme.VryvPink
@@ -88,502 +82,583 @@ fun EventDetailScreen(
 ) {
     val events by repository.events.collectAsState()
     val event = events.find { it.id == eventId } ?: events.first()
-    val companions by repository.companions.collectAsState()
 
     var showTicketSheet by remember { mutableStateOf(false) }
+    var showWaitlistSheet by remember { mutableStateOf(false) }
 
-    Column(
+    Box(
         modifier = modifier
             .fillMaxSize()
             .background(VryvBg)
-            .verticalScroll(rememberScrollState())
     ) {
-        // Hero Image
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(340.dp)
-        ) {
-            Image(
-                painter = painterResource(id = event.coverRes),
-                contentDescription = event.title,
-                contentScale = ContentScale.Crop,
-                modifier = Modifier.fillMaxSize()
-            )
-
-            // Gradient
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(
-                        Brush.verticalGradient(
-                            colors = listOf(
-                                Color(0x99000000),
-                                Color.Transparent,
-                                VryvBg
-                            ),
-                            startY = 0f,
-                            endY = 700f
-                        )
-                    )
-            )
-
-            // Top Buttons
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 40.dp, start = 16.dp, end = 16.dp),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                IconButton(
-                    onClick = onBackClick,
-                    modifier = Modifier
-                        .size(42.dp)
-                        .clip(CircleShape)
-                        .background(Color(0x77000000))
-                        .testTag("detail_back_button")
-                ) {
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                        contentDescription = "Назад",
-                        tint = Color.White
-                    )
-                }
-
-                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    IconButton(
-                        onClick = { repository.showToast("Ссылка на мероприятие скопирована") },
-                        modifier = Modifier
-                            .size(42.dp)
-                            .clip(CircleShape)
-                            .background(Color(0x77000000))
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Share,
-                            contentDescription = "Поделиться",
-                            tint = Color.White
-                        )
-                    }
-
-                    IconButton(
-                        onClick = { repository.toggleSaveEvent(event.id) },
-                        modifier = Modifier
-                            .size(42.dp)
-                            .clip(CircleShape)
-                            .background(Color(0x77000000))
-                            .testTag("detail_bookmark_button")
-                    ) {
-                        Icon(
-                            imageVector = if (event.isBookmarked) Icons.Default.Bookmark else Icons.Default.BookmarkBorder,
-                            contentDescription = "Сохранить",
-                            tint = if (event.isBookmarked) VryvPink else Color.White
-                        )
-                    }
-                }
-            }
-
-            // Status Badge if not standard
-            if (event.status != EventStatus.PUBLISHED) {
-                StatusBadge(
-                    status = event.status,
-                    modifier = Modifier
-                        .align(Alignment.BottomStart)
-                        .padding(16.dp)
-                )
-            }
-        }
-
-        // Event Main Info
         Column(
             modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp)
+                .fillMaxSize()
+                .verticalScroll(rememberScrollState())
+                .padding(bottom = 96.dp)
         ) {
-            // Cancelled or Rescheduled Alert Banner
-            if (event.status == EventStatus.CANCELLED) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(bottom = 12.dp)
-                        .clip(RoundedCornerShape(14.dp))
-                        .background(Color(0x33FF3D00))
-                        .padding(14.dp)
-                ) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(
-                            imageVector = Icons.Default.Warning,
-                            contentDescription = null,
-                            tint = Color(0xFFFF3D00)
-                        )
-                        Spacer(modifier = Modifier.width(10.dp))
-                        Text(
-                            text = "Мероприятие отменено: ${event.cancellationReason ?: "Решение организатора"}",
-                            color = Color(0xFFFF8A80),
-                            fontSize = 13.sp,
-                            fontWeight = FontWeight.Medium
-                        )
-                    }
-                }
-            } else if (event.status == EventStatus.RESCHEDULED) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(bottom = 12.dp)
-                        .clip(RoundedCornerShape(14.dp))
-                        .background(Color(0x3300E5FF))
-                        .padding(14.dp)
-                ) {
-                    Text(
-                        text = "Событие перенесено с ${event.oldDateDisplay} на ${event.dateDisplay}",
-                        color = Color(0xFF80D8FF),
-                        fontSize = 13.sp,
-                        fontWeight = FontWeight.Medium
-                    )
-                }
-            }
-
-            Text(
-                text = event.title,
-                color = VryvTextPrimary,
-                fontSize = 24.sp,
-                fontWeight = FontWeight.Bold
-            )
-
-            Spacer(modifier = Modifier.height(10.dp))
-
-            // Date & Time
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.padding(vertical = 4.dp)
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Schedule,
-                    contentDescription = null,
-                    tint = VryvPink,
-                    modifier = Modifier.size(18.dp)
-                )
-                Spacer(modifier = Modifier.width(8.dp))
-                Text(
-                    text = "${event.dateDisplay} · ${event.timeDisplay}",
-                    color = VryvTextPrimary,
-                    fontSize = 15.sp,
-                    fontWeight = FontWeight.SemiBold
-                )
-            }
-
-            // Venue & Address
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.padding(vertical = 4.dp)
-            ) {
-                Icon(
-                    imageVector = Icons.Default.LocationOn,
-                    contentDescription = null,
-                    tint = VryvLime,
-                    modifier = Modifier.size(18.dp)
-                )
-                Spacer(modifier = Modifier.width(8.dp))
-                Text(
-                    text = "${event.venueName} · ${event.address}",
-                    color = VryvTextSecondary,
-                    fontSize = 14.sp
-                )
-            }
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            // Action Buttons: Иду & Ищу компанию
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(10.dp)
-            ) {
-                // "Иду" Button
-                Box(
-                    modifier = Modifier
-                        .weight(1f)
-                        .height(50.dp)
-                        .clip(RoundedCornerShape(14.dp))
-                        .background(if (event.isGoing) VryvPink else VryvCard)
-                        .clickable { repository.toggleGoingEvent(event.id) }
-                        .padding(horizontal = 14.dp)
-                        .testTag("action_going_${event.id}"),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        if (event.isGoing) {
-                            Icon(
-                                imageVector = Icons.Default.Check,
-                                contentDescription = null,
-                                tint = Color.White,
-                                modifier = Modifier.size(18.dp)
-                            )
-                            Spacer(modifier = Modifier.width(6.dp))
-                        }
-                        Text(
-                            text = if (event.isGoing) "Иду (${event.goingCount})" else "Я пойду (${event.goingCount})",
-                            color = Color.White,
-                            fontSize = 14.sp,
-                            fontWeight = FontWeight.Bold
-                        )
-                    }
-                }
-
-                // "Ищу компанию" Button
-                Box(
-                    modifier = Modifier
-                        .weight(1f)
-                        .height(50.dp)
-                        .clip(RoundedCornerShape(14.dp))
-                        .background(VryvCardElevated)
-                        .clickable { onFindCompanyClick(event.id) }
-                        .padding(horizontal = 14.dp)
-                        .testTag("action_find_company"),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(
-                            imageVector = Icons.Default.Group,
-                            contentDescription = null,
-                            tint = VryvLime,
-                            modifier = Modifier.size(18.dp)
-                        )
-                        Spacer(modifier = Modifier.width(6.dp))
-                        Text(
-                            text = "Ищу компанию",
-                            color = VryvTextPrimary,
-                            fontSize = 14.sp,
-                            fontWeight = FontWeight.SemiBold
-                        )
-                    }
-                }
-            }
-
-            Spacer(modifier = Modifier.height(10.dp))
-
-            // Secondary Action Buttons: Маршрут & Пригласить друзей
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(10.dp)
-            ) {
-                Box(
-                    modifier = Modifier
-                        .weight(1f)
-                        .height(44.dp)
-                        .clip(RoundedCornerShape(12.dp))
-                        .background(VryvCard)
-                        .clickable { onOpenRouteClick(event.id) },
-                    contentAlignment = Alignment.Center
-                ) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(
-                            imageVector = Icons.Default.Directions,
-                            contentDescription = null,
-                            tint = VryvTextSecondary,
-                            modifier = Modifier.size(16.dp)
-                        )
-                        Spacer(modifier = Modifier.width(6.dp))
-                        Text(
-                            text = "Маршрут",
-                            color = VryvTextSecondary,
-                            fontSize = 13.sp,
-                            fontWeight = FontWeight.Medium
-                        )
-                    }
-                }
-
-                Box(
-                    modifier = Modifier
-                        .weight(1f)
-                        .height(44.dp)
-                        .clip(RoundedCornerShape(12.dp))
-                        .background(VryvCard)
-                        .clickable { onInviteFriendsClick(event.id) },
-                    contentAlignment = Alignment.Center
-                ) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(
-                            imageVector = Icons.Default.PersonAdd,
-                            contentDescription = null,
-                            tint = VryvTextSecondary,
-                            modifier = Modifier.size(16.dp)
-                        )
-                        Spacer(modifier = Modifier.width(6.dp))
-                        Text(
-                            text = "Пригласить друзей",
-                            color = VryvTextSecondary,
-                            fontSize = 13.sp,
-                            fontWeight = FontWeight.Medium
-                        )
-                    }
-                }
-            }
-
-            Spacer(modifier = Modifier.height(20.dp))
-
-            // Price & Tickets Section
+            // Hero Image matching screen_04_карточка_события.png
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .clip(RoundedCornerShape(16.dp))
-                    .background(VryvCard)
-                    .padding(16.dp)
+                    .height(320.dp)
             ) {
+                Image(
+                    painter = painterResource(id = event.coverRes),
+                    contentDescription = event.title,
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier.fillMaxSize()
+                )
+
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(
+                            Brush.verticalGradient(
+                                0.0f to Color(0x660B0B0F),
+                                0.35f to Color(0x260B0B0F),
+                                0.80f to Color(0xD90B0B0F),
+                                1.0f to VryvBg
+                            )
+                        )
+                )
+
+                // Top Glass Buttons
                 Row(
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 12.dp, start = 20.dp, end = 20.dp),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Column {
-                        Text(
-                            text = "Стоимость входа",
-                            color = VryvTextSecondary,
-                            fontSize = 12.sp
-                        )
-                        Text(
-                            text = event.priceString,
-                            color = if (event.priceByn == 0.0) VryvLime else VryvTextPrimary,
-                            fontSize = 20.sp,
-                            fontWeight = FontWeight.Bold
-                        )
-                    }
+                    VryvIconButton(
+                        icon = VryvIcons.Back,
+                        onClick = onBackClick,
+                        isGlass = true,
+                        testTag = "detail_back_button"
+                    )
 
-                    Box(
-                        modifier = Modifier
-                            .clip(RoundedCornerShape(12.dp))
-                            .background(VryvLime)
-                            .clickable { showTicketSheet = true }
-                            .padding(horizontal = 16.dp, vertical = 10.dp)
-                            .testTag("buy_ticket_button")
-                    ) {
-                        Text(
-                            text = if (event.priceByn == 0.0) "Регистрация" else "Купить билет",
-                            color = Color.Black,
-                            fontSize = 13.sp,
-                            fontWeight = FontWeight.Bold
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        VryvIconButton(
+                            icon = VryvIcons.Share,
+                            onClick = { repository.showToast("Ссылка на мероприятие скопирована") },
+                            isGlass = true
+                        )
+                        VryvIconButton(
+                            icon = VryvIcons.Save,
+                            onClick = { repository.toggleSaveEvent(event.id) },
+                            isGlass = true,
+                            tint = if (event.isBookmarked) VryvPink else VryvTextPrimary,
+                            testTag = "detail_bookmark_button"
                         )
                     }
                 }
-            }
 
-            Spacer(modifier = Modifier.height(20.dp))
-
-            // Description
-            Text(
-                text = "О мероприятии",
-                color = VryvTextPrimary,
-                fontSize = 17.sp,
-                fontWeight = FontWeight.Bold
-            )
-            Spacer(modifier = Modifier.height(6.dp))
-            Text(
-                text = event.description,
-                color = VryvTextSecondary,
-                fontSize = 14.sp,
-                lineHeight = 22.sp
-            )
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            // Tags
-            Text(
-                text = "Жанры и вайб",
-                color = VryvTextPrimary,
-                fontSize = 15.sp,
-                fontWeight = FontWeight.Bold
-            )
-            Spacer(modifier = Modifier.height(8.dp))
-            FlowRow(
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                for (genre in event.genres) {
-                    Box(
-                        modifier = Modifier
-                            .clip(RoundedCornerShape(8.dp))
-                            .background(VryvCard)
-                            .padding(horizontal = 12.dp, vertical = 6.dp)
-                    ) {
-                        Text(text = genre, color = VryvTextPrimary, fontSize = 12.sp)
-                    }
-                }
-                Box(
+                // Bottom of Hero: Tags + Title
+                Column(
                     modifier = Modifier
-                        .clip(RoundedCornerShape(8.dp))
-                        .background(VryvCard)
-                        .padding(horizontal = 12.dp, vertical = 6.dp)
+                        .align(Alignment.BottomStart)
+                        .fillMaxWidth()
+                        .padding(horizontal = 20.dp, vertical = 14.dp)
                 ) {
-                    Text(text = event.ageLimit, color = VryvPink, fontSize = 12.sp, fontWeight = FontWeight.Bold)
-                }
-            }
+                    Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                        if (event.status != EventStatus.PUBLISHED) {
+                            StatusBadge(status = event.status)
+                        } else {
+                            VryvTag(text = event.category, variant = VryvTagVariant.PINK)
+                        }
+                        VryvTag(text = event.ageLimit, variant = VryvTagVariant.DARK)
+                        VryvTag(text = "По твоим интересам", variant = VryvTagVariant.DARK)
+                    }
 
-            Spacer(modifier = Modifier.height(20.dp))
+                    Spacer(modifier = Modifier.height(10.dp))
 
-            // Friends going
-            Text(
-                text = "Друзья идут",
-                color = VryvTextPrimary,
-                fontSize = 15.sp,
-                fontWeight = FontWeight.Bold
-            )
-            Spacer(modifier = Modifier.height(8.dp))
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                for (friend in companions.take(3)) {
-                    Image(
-                        painter = painterResource(id = friend.avatarRes),
-                        contentDescription = friend.name,
-                        modifier = Modifier
-                            .size(36.dp)
-                            .clip(CircleShape)
-                            .border(1.5.dp, VryvPink, CircleShape)
+                    Text(
+                        text = event.title,
+                        color = VryvTextPrimary,
+                        fontFamily = InterFontFamily,
+                        fontSize = 27.sp,
+                        fontWeight = FontWeight.Bold,
+                        letterSpacing = (-0.7).sp,
+                        lineHeight = 30.sp
                     )
                 }
-                Text(
-                    text = "Алина, Дима и еще 2 друга",
-                    color = VryvTextSecondary,
-                    fontSize = 13.sp
-                )
             }
 
-            Spacer(modifier = Modifier.height(28.dp))
-            HorizontalDivider(color = VryvLine, thickness = 0.5.dp)
-            Spacer(modifier = Modifier.height(12.dp))
-
-            // Report button
-            Row(
+            Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .clickable { onReportClick("event", event.title) }
-                    .padding(vertical = 12.dp),
-                verticalAlignment = Alignment.CenterVertically
+                    .padding(horizontal = 20.dp)
             ) {
-                Icon(
-                    imageVector = Icons.Default.Flag,
-                    contentDescription = null,
-                    tint = VryvPink,
-                    modifier = Modifier.size(18.dp)
-                )
-                Spacer(modifier = Modifier.width(8.dp))
-                Text(
-                    text = "Пожаловаться на мероприятие",
-                    color = VryvPink,
-                    fontSize = 13.sp
-                )
-            }
+                // Special Status Banners (evCancel.png, evMoved.png, evDone.png, evFull.png)
+                if (event.status == EventStatus.CANCELLED) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(bottom = 12.dp)
+                            .clip(RoundedCornerShape(16.dp))
+                            .background(Color(0x24FF5A5A))
+                            .border(1.dp, Color(0x59FF5A5A), RoundedCornerShape(16.dp))
+                            .padding(14.dp)
+                    ) {
+                        Column {
+                            Text(
+                                text = "Событие отменено организатором",
+                                color = Color(0xFFFF8C8C),
+                                fontFamily = InterFontFamily,
+                                fontSize = 14.sp,
+                                fontWeight = FontWeight.Bold
+                            )
+                            Spacer(modifier = Modifier.height(4.dp))
+                            Text(
+                                text = event.cancellationReason ?: "По техническим причинам мероприятие не состоится. Деньги за предпродажу вернутся автоматически.",
+                                color = VryvTextSecondary,
+                                fontFamily = InterFontFamily,
+                                fontSize = 12.5.sp
+                            )
+                        }
+                    }
+                } else if (event.status == EventStatus.RESCHEDULED) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(bottom = 12.dp)
+                            .clip(RoundedCornerShape(16.dp))
+                            .background(Color(0x24FFC42E))
+                            .border(1.dp, Color(0x59FFC42E), RoundedCornerShape(16.dp))
+                            .padding(14.dp)
+                    ) {
+                        Column {
+                            Text(
+                                text = "Новая дата: ${event.dateDisplay}",
+                                color = Color(0xFFFFD35A),
+                                fontFamily = InterFontFamily,
+                                fontSize = 14.sp,
+                                fontWeight = FontWeight.Bold
+                            )
+                            Spacer(modifier = Modifier.height(2.dp))
+                            Text(
+                                text = "Перенесено с ${event.oldDateDisplay ?: "прежней даты"}. Все записи действительны.",
+                                color = VryvTextSecondary,
+                                fontFamily = InterFontFamily,
+                                fontSize = 12.5.sp
+                            )
+                        }
+                    }
+                }
 
-            Spacer(modifier = Modifier.height(40.dp))
+                // 3-Row Unified Info Card (Date/Time, Venue + Маршрут, Price + Билет)
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(20.dp))
+                        .background(VryvCard)
+                        .border(1.dp, VryvLine, RoundedCornerShape(20.dp))
+                        .padding(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    // Row 1: Date & Time
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Box(
+                            modifier = Modifier
+                                .size(38.dp)
+                                .clip(RoundedCornerShape(12.dp))
+                                .background(Color(0xFF26262F)),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(
+                                imageVector = VryvIcons.Cal,
+                                contentDescription = null,
+                                tint = VryvPink,
+                                modifier = Modifier.size(18.dp)
+                            )
+                        }
+                        Spacer(modifier = Modifier.width(12.dp))
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(
+                                text = "${event.dateDisplay} · ${event.timeDisplay}",
+                                color = VryvTextPrimary,
+                                fontFamily = InterFontFamily,
+                                fontSize = 14.sp,
+                                fontWeight = FontWeight.SemiBold
+                            )
+                            Text(
+                                text = "Сбор гостей за 30 минут",
+                                color = VryvTextSecondary,
+                                fontFamily = InterFontFamily,
+                                fontSize = 12.sp
+                            )
+                        }
+                    }
+
+                    HorizontalDivider(color = VryvLine, thickness = 0.5.dp)
+
+                    // Row 2: Venue & Route
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Box(
+                            modifier = Modifier
+                                .size(38.dp)
+                                .clip(RoundedCornerShape(12.dp))
+                                .background(Color(0xFF26262F)),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(
+                                imageVector = VryvIcons.Pin,
+                                contentDescription = null,
+                                tint = VryvPink,
+                                modifier = Modifier.size(18.dp)
+                            )
+                        }
+                        Spacer(modifier = Modifier.width(12.dp))
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(
+                                text = event.venueName,
+                                color = VryvTextPrimary,
+                                fontFamily = InterFontFamily,
+                                fontSize = 14.sp,
+                                fontWeight = FontWeight.SemiBold
+                            )
+                            Text(
+                                text = "${event.address} · 1,1 км от тебя",
+                                color = VryvTextSecondary,
+                                fontFamily = InterFontFamily,
+                                fontSize = 12.sp
+                            )
+                        }
+                        Box(
+                            modifier = Modifier
+                                .height(30.dp)
+                                .clip(RoundedCornerShape(15.dp))
+                                .background(Color(0xFF26262F))
+                                .clickable { onOpenRouteClick(event.id) }
+                                .padding(horizontal = 12.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = "Маршрут",
+                                color = VryvTextPrimary,
+                                fontFamily = InterFontFamily,
+                                fontSize = 12.sp,
+                                fontWeight = FontWeight.SemiBold
+                            )
+                        }
+                    }
+
+                    HorizontalDivider(color = VryvLine, thickness = 0.5.dp)
+
+                    // Row 3: Price & Ticket
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Box(
+                            modifier = Modifier
+                                .size(38.dp)
+                                .clip(RoundedCornerShape(12.dp))
+                                .background(Color(0xFF26262F)),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(
+                                imageVector = VryvIcons.Ticket,
+                                contentDescription = null,
+                                tint = VryvPink,
+                                modifier = Modifier.size(18.dp)
+                            )
+                        }
+                        Spacer(modifier = Modifier.width(12.dp))
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(
+                                text = "Вход · ${event.priceString}",
+                                color = if (event.priceByn == 0.0) VryvLime else VryvTextPrimary,
+                                fontFamily = InterFontFamily,
+                                fontSize = 14.sp,
+                                fontWeight = FontWeight.SemiBold
+                            )
+                            Text(
+                                text = "На входе или предпродажа",
+                                color = VryvTextSecondary,
+                                fontFamily = InterFontFamily,
+                                fontSize = 12.sp
+                            )
+                        }
+                        Box(
+                            modifier = Modifier
+                                .height(30.dp)
+                                .clip(RoundedCornerShape(15.dp))
+                                .background(VryvLime)
+                                .clickable { showTicketSheet = true }
+                                .padding(horizontal = 12.dp)
+                                .testTag("buy_ticket_button"),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = if (event.priceByn == 0.0) "Регистрация" else "Купить билет",
+                                color = VryvBg,
+                                fontFamily = InterFontFamily,
+                                fontSize = 12.sp,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(14.dp))
+
+                // Participants Card matching screen_04
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(20.dp))
+                        .background(VryvCard)
+                        .border(1.dp, VryvLine, RoundedCornerShape(20.dp))
+                        .padding(16.dp)
+                ) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = "Участники",
+                            color = VryvTextPrimary,
+                            fontFamily = InterFontFamily,
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                        Text(
+                            text = "Все ${event.goingCount} >",
+                            color = VryvPink,
+                            fontFamily = InterFontFamily,
+                            fontSize = 12.5.sp,
+                            fontWeight = FontWeight.SemiBold,
+                            modifier = Modifier.clickable { onInviteFriendsClick(event.id) }
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(12.dp))
+
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        VryvAvatarStack(
+                            avatarResList = listOf(
+                                R.drawable.av1,
+                                R.drawable.av2,
+                                R.drawable.av3,
+                                R.drawable.av4
+                            ),
+                            size = 34.dp,
+                            extraCountText = "+${(event.goingCount - 4).coerceAtLeast(12)}"
+                        )
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(
+                                text = "4 твоих друга идут: Аня, Влад, Кирилл, Даша",
+                                color = Color(0xFFD0D0DC),
+                                fontFamily = InterFontFamily,
+                                fontSize = 12.5.sp,
+                                lineHeight = 17.sp
+                            )
+                            Text(
+                                text = "12 человек ищут компанию",
+                                color = VryvPink,
+                                fontFamily = InterFontFamily,
+                                fontSize = 12.sp,
+                                fontWeight = FontWeight.SemiBold,
+                                modifier = Modifier.padding(top = 2.dp)
+                            )
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(12.dp))
+
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        VryvButton(
+                            text = "Пригласить друзей",
+                            onClick = { onInviteFriendsClick(event.id) },
+                            variant = VryvButtonVariant.SECONDARY,
+                            isSmall = true,
+                            modifier = Modifier.weight(1f)
+                        )
+                        VryvButton(
+                            text = "Лист ожидания",
+                            onClick = { showWaitlistSheet = true },
+                            variant = VryvButtonVariant.SECONDARY,
+                            isSmall = true,
+                            modifier = Modifier.weight(1f)
+                        )
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                // Description Section
+                Text(
+                    text = "О событии",
+                    color = VryvTextPrimary,
+                    fontFamily = InterFontFamily,
+                    fontSize = 15.sp,
+                    fontWeight = FontWeight.Bold
+                )
+                Spacer(modifier = Modifier.height(6.dp))
+                Text(
+                    text = event.description,
+                    color = Color(0xFFC6C6D2),
+                    fontFamily = InterFontFamily,
+                    fontSize = 14.sp,
+                    lineHeight = 20.sp
+                )
+
+                Spacer(modifier = Modifier.height(12.dp))
+
+                FlowRow(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    event.genres.forEach { genre ->
+                        VryvChip(
+                            text = genre,
+                            selected = false,
+                            onClick = {}
+                        )
+                    }
+                    VryvChip(
+                        text = event.ageLimit,
+                        selected = false,
+                        onClick = {}
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(20.dp))
+                HorizontalDivider(color = VryvLine, thickness = 0.5.dp)
+                Spacer(modifier = Modifier.height(8.dp))
+
+                // Report button
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable { onReportClick("event", event.title) }
+                        .padding(vertical = 10.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Icon(
+                        imageVector = VryvIcons.Flag,
+                        contentDescription = null,
+                        tint = VryvPink,
+                        modifier = Modifier.size(18.dp)
+                    )
+                    Text(
+                        text = "Пожаловаться на мероприятие",
+                        color = VryvPink,
+                        fontFamily = InterFontFamily,
+                        fontSize = 13.5.sp,
+                        fontWeight = FontWeight.SemiBold
+                    )
+                }
+            }
+        }
+
+        // Sticky Bottom Bar matching screen_04_карточка_события.png
+        Row(
+            modifier = Modifier
+                .align(Alignment.BottomCenter)
+                .fillMaxWidth()
+                .background(
+                    Brush.verticalGradient(
+                        0.0f to Color.Transparent,
+                        0.25f to Color(0xF50B0B0F),
+                        1.0f to VryvBg
+                    )
+                )
+                .border(0.5.dp, VryvLine)
+                .padding(horizontal = 20.dp, vertical = 14.dp),
+            horizontalArrangement = Arrangement.spacedBy(10.dp)
+        ) {
+            VryvButton(
+                text = if (event.isGoing) "✓ Иду (${event.goingCount})" else "Я пойду (${event.goingCount})",
+                onClick = { repository.toggleGoingEvent(event.id) },
+                variant = VryvButtonVariant.PRIMARY,
+                modifier = Modifier.weight(1f),
+                testTag = "action_going_${event.id}"
+            )
+            VryvButton(
+                text = "Ищу компанию",
+                onClick = { onFindCompanyClick(event.id) },
+                variant = VryvButtonVariant.SECONDARY,
+                leadingIcon = {
+                    Icon(
+                        imageVector = VryvIcons.Users,
+                        contentDescription = null,
+                        tint = VryvTextPrimary,
+                        modifier = Modifier.size(18.dp)
+                    )
+                },
+                modifier = Modifier.weight(1.1f),
+                testTag = "action_find_company"
+            )
         }
     }
 
-    // Demo Ticket Sheet
+    // Waitlist Sheet (waitOk.png)
+    if (showWaitlistSheet) {
+        ModalBottomSheet(
+            onDismissRequest = { showWaitlistSheet = false },
+            sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
+            containerColor = Color(0xFF17171C),
+            dragHandle = null
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 20.dp, vertical = 18.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Box(
+                    modifier = Modifier
+                        .size(64.dp)
+                        .clip(CircleShape)
+                        .background(Color(0x24C7FF28))
+                        .border(1.dp, Color(0x59C7FF28), CircleShape),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = VryvIcons.Bell,
+                        contentDescription = null,
+                        tint = VryvLime,
+                        modifier = Modifier.size(28.dp)
+                    )
+                }
+                Spacer(modifier = Modifier.height(14.dp))
+                Text(
+                    text = "Ты в листе ожидания",
+                    color = VryvTextPrimary,
+                    fontFamily = InterFontFamily,
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight.Bold
+                )
+                Spacer(modifier = Modifier.height(6.dp))
+                Text(
+                    text = "Номер в очереди: #4. Мы сразу пришлём пуш-уведомление, если кто-то отменит запись.",
+                    color = VryvTextSecondary,
+                    fontFamily = InterFontFamily,
+                    fontSize = 13.5.sp,
+                    modifier = Modifier.padding(horizontal = 12.dp)
+                )
+                Spacer(modifier = Modifier.height(18.dp))
+                VryvButton(
+                    text = "Понятно",
+                    onClick = { showWaitlistSheet = false },
+                    variant = VryvButtonVariant.PRIMARY
+                )
+            }
+        }
+    }
+
+    // Electronic Ticket Sheet
     if (showTicketSheet) {
         ModalBottomSheet(
             onDismissRequest = { showTicketSheet = false },
-            sheetState = rememberModalBottomSheetState(),
-            containerColor = VryvCard
+            sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
+            containerColor = Color(0xFF17171C),
+            dragHandle = null
         ) {
             Column(
                 modifier = Modifier
@@ -594,6 +669,7 @@ fun EventDetailScreen(
                 Text(
                     text = "Электронный билет",
                     color = VryvTextPrimary,
+                    fontFamily = InterFontFamily,
                     fontSize = 20.sp,
                     fontWeight = FontWeight.Bold
                 )
@@ -601,12 +677,14 @@ fun EventDetailScreen(
                 Text(
                     text = event.title,
                     color = VryvPink,
+                    fontFamily = InterFontFamily,
                     fontSize = 15.sp,
                     fontWeight = FontWeight.SemiBold
                 )
                 Text(
                     text = "${event.dateDisplay} · ${event.timeDisplay}",
                     color = VryvTextSecondary,
+                    fontFamily = InterFontFamily,
                     fontSize = 13.sp
                 )
 
@@ -632,30 +710,20 @@ fun EventDetailScreen(
                 Text(
                     text = "VRYV-MSQ-2026-${event.id.hashCode().toString().takeLast(6)}",
                     color = VryvTextMuted,
+                    fontFamily = InterFontFamily,
                     fontSize = 13.sp,
                     fontWeight = FontWeight.Bold
                 )
 
                 Spacer(modifier = Modifier.height(20.dp))
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clip(RoundedCornerShape(14.dp))
-                        .background(VryvLime)
-                        .clickable {
-                            showTicketSheet = false
-                            repository.showToast("Билет сохранен в Apple Wallet / Google Pay")
-                        }
-                        .padding(vertical = 14.dp),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        text = "Сохранить билет",
-                        color = Color.Black,
-                        fontSize = 15.sp,
-                        fontWeight = FontWeight.Bold
-                    )
-                }
+                VryvButton(
+                    text = "Сохранить билет",
+                    onClick = {
+                        showTicketSheet = false
+                        repository.showToast("Билет сохранен в Apple Wallet / Google Pay")
+                    },
+                    variant = VryvButtonVariant.LIME
+                )
             }
         }
     }

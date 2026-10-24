@@ -1,6 +1,7 @@
 package com.example.ui.screens.company
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -10,16 +11,10 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
-import androidx.compose.material3.Switch
-import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
-import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -34,15 +29,15 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.data.VryvRepository
-import com.example.ui.theme.VryvCard
-import com.example.ui.theme.VryvInputBg
-import com.example.ui.theme.VryvLime
+import com.example.ui.components.VryvFloatingBottomSheet
+import com.example.ui.components.VryvInputField
+import com.example.ui.components.VryvSegmentedControl
+import com.example.ui.theme.VryvCardElevated
+import com.example.ui.theme.VryvLine
 import com.example.ui.theme.VryvPink
-import com.example.ui.theme.VryvTextMuted
 import com.example.ui.theme.VryvTextPrimary
 import com.example.ui.theme.VryvTextSecondary
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CreateCompanySheet(
     repository: VryvRepository,
@@ -55,20 +50,14 @@ fun CreateCompanySheet(
     var maxMembers by remember { mutableStateOf("6") }
     var isOpen by remember { mutableStateOf(true) }
 
-    ModalBottomSheet(
-        onDismissRequest = onDismiss,
-        sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
-        containerColor = VryvCard
+    VryvFloatingBottomSheet(
+        onDismiss = onDismiss
     ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 20.dp, vertical = 12.dp)
-        ) {
+        Column(modifier = Modifier.fillMaxWidth()) {
             Text(
                 text = "Новая компания",
                 color = VryvTextPrimary,
-                fontSize = 20.sp,
+                fontSize = 21.sp,
                 fontWeight = FontWeight.Bold
             )
             Spacer(modifier = Modifier.height(4.dp))
@@ -81,18 +70,24 @@ fun CreateCompanySheet(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Title Field
-            Text(text = "Название компании", color = VryvTextSecondary, fontSize = 12.sp)
-            Spacer(modifier = Modifier.height(4.dp))
+            // Title Field (preserving testTag("input_company_title"))
+            Text(
+                text = "НАЗВАНИЕ КОМПАНИИ",
+                color = VryvTextSecondary,
+                fontSize = 11.sp,
+                fontWeight = FontWeight.Bold,
+                letterSpacing = 0.8.sp
+            )
+            Spacer(modifier = Modifier.height(6.dp))
             OutlinedTextField(
                 value = title,
                 onValueChange = { title = it },
-                shape = RoundedCornerShape(12.dp),
+                shape = RoundedCornerShape(14.dp),
                 colors = OutlinedTextFieldDefaults.colors(
-                    focusedContainerColor = VryvInputBg,
-                    unfocusedContainerColor = VryvInputBg,
+                    focusedContainerColor = VryvCardElevated,
+                    unfocusedContainerColor = VryvCardElevated,
                     focusedBorderColor = VryvPink,
-                    unfocusedBorderColor = Color.Transparent,
+                    unfocusedBorderColor = VryvLine,
                     focusedTextColor = VryvTextPrimary,
                     unfocusedTextColor = VryvTextPrimary
                 ),
@@ -108,109 +103,61 @@ fun CreateCompanySheet(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(10.dp)
             ) {
-                Column(modifier = Modifier.weight(1f)) {
-                    Text(text = "Время встречи", color = VryvTextSecondary, fontSize = 12.sp)
-                    Spacer(modifier = Modifier.height(4.dp))
-                    OutlinedTextField(
-                        value = meetingTime,
-                        onValueChange = { meetingTime = it },
-                        shape = RoundedCornerShape(12.dp),
-                        colors = OutlinedTextFieldDefaults.colors(
-                            focusedContainerColor = VryvInputBg,
-                            unfocusedContainerColor = VryvInputBg,
-                            focusedBorderColor = VryvPink,
-                            unfocusedBorderColor = Color.Transparent,
-                            focusedTextColor = VryvTextPrimary,
-                            unfocusedTextColor = VryvTextPrimary
-                        ),
-                        modifier = Modifier.fillMaxWidth()
-                    )
-                }
+                VryvInputField(
+                    value = meetingTime,
+                    onValueChange = { meetingTime = it },
+                    label = "Время встречи",
+                    modifier = Modifier.weight(1f)
+                )
 
-                Column(modifier = Modifier.weight(1f)) {
-                    Text(text = "Лимит мест", color = VryvTextSecondary, fontSize = 12.sp)
-                    Spacer(modifier = Modifier.height(4.dp))
-                    OutlinedTextField(
-                        value = maxMembers,
-                        onValueChange = { maxMembers = it },
-                        shape = RoundedCornerShape(12.dp),
-                        colors = OutlinedTextFieldDefaults.colors(
-                            focusedContainerColor = VryvInputBg,
-                            unfocusedContainerColor = VryvInputBg,
-                            focusedBorderColor = VryvPink,
-                            unfocusedBorderColor = Color.Transparent,
-                            focusedTextColor = VryvTextPrimary,
-                            unfocusedTextColor = VryvTextPrimary
-                        ),
-                        modifier = Modifier.fillMaxWidth()
-                    )
-                }
+                VryvInputField(
+                    value = maxMembers,
+                    onValueChange = { maxMembers = it },
+                    label = "Лимит мест",
+                    modifier = Modifier.weight(1f)
+                )
             }
 
             Spacer(modifier = Modifier.height(12.dp))
 
             // Meeting Place
-            Text(text = "Место сбора", color = VryvTextSecondary, fontSize = 12.sp)
-            Spacer(modifier = Modifier.height(4.dp))
-            OutlinedTextField(
+            VryvInputField(
                 value = meetingPlace,
                 onValueChange = { meetingPlace = it },
-                shape = RoundedCornerShape(12.dp),
-                colors = OutlinedTextFieldDefaults.colors(
-                    focusedContainerColor = VryvInputBg,
-                    unfocusedContainerColor = VryvInputBg,
-                    focusedBorderColor = VryvPink,
-                    unfocusedBorderColor = Color.Transparent,
-                    focusedTextColor = VryvTextPrimary,
-                    unfocusedTextColor = VryvTextPrimary
-                ),
-                modifier = Modifier.fillMaxWidth()
+                label = "Место сбора"
             )
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Open / Closed Switch
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clip(RoundedCornerShape(12.dp))
-                    .background(VryvInputBg)
-                    .padding(horizontal = 14.dp, vertical = 8.dp),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Column {
-                    Text(
-                        text = if (isOpen) "Открытая компания" else "Закрытая компания",
-                        color = VryvTextPrimary,
-                        fontSize = 14.sp,
-                        fontWeight = FontWeight.SemiBold
-                    )
-                    Text(
-                        text = if (isOpen) "Любой может вступить сразу" else "Вступление только по подтверждению",
-                        color = VryvTextSecondary,
-                        fontSize = 11.sp
-                    )
-                }
-                Switch(
-                    checked = isOpen,
-                    onCheckedChange = { isOpen = it },
-                    colors = SwitchDefaults.colors(
-                        checkedThumbColor = Color.White,
-                        checkedTrackColor = VryvLime,
-                        uncheckedThumbColor = VryvTextMuted,
-                        uncheckedTrackColor = VryvCard
-                    )
-                )
-            }
+            // Open / Closed Segmented Control matching compNew.png
+            Text(
+                text = "ТИП КОМПАНИИ",
+                color = VryvTextSecondary,
+                fontSize = 11.sp,
+                fontWeight = FontWeight.Bold,
+                letterSpacing = 0.8.sp,
+                modifier = Modifier.padding(bottom = 6.dp)
+            )
+            VryvSegmentedControl(
+                options = listOf("Открытая", "По заявке"),
+                selectedIndex = if (isOpen) 0 else 1,
+                onSelect = { idx -> isOpen = idx == 0 }
+            )
+            Spacer(modifier = Modifier.height(4.dp))
+            Text(
+                text = if (isOpen) "Любой участник может вступить сразу" else "Вступление только после одобрения создателем",
+                color = VryvTextSecondary,
+                fontSize = 11.5.sp
+            )
 
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(22.dp))
 
-            // Submit Button
+            // Submit Button (preserving testTag("submit_create_company"))
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .clip(RoundedCornerShape(14.dp))
+                    .height(50.dp)
+                    .clip(RoundedCornerShape(16.dp))
                     .background(VryvPink)
                     .clickable {
                         val limit = maxMembers.toIntOrNull() ?: 6
@@ -224,7 +171,6 @@ fun CreateCompanySheet(
                         )
                         onCompanyCreated(newGroup.id)
                     }
-                    .padding(vertical = 14.dp)
                     .testTag("submit_create_company"),
                 contentAlignment = Alignment.Center
             ) {
@@ -235,8 +181,6 @@ fun CreateCompanySheet(
                     fontWeight = FontWeight.Bold
                 )
             }
-
-            Spacer(modifier = Modifier.height(24.dp))
         }
     }
 }

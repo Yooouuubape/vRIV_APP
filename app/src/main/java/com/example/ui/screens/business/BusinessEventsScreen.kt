@@ -2,6 +2,7 @@ package com.example.ui.screens.business
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -20,24 +21,14 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.CalendarMonth
-import androidx.compose.material.icons.filled.Cancel
-import androidx.compose.material.icons.filled.CheckCircle
-import androidx.compose.material.icons.filled.ContentCopy
-import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
-import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -58,17 +49,20 @@ import com.example.data.EventStatus
 import com.example.data.VryvEvent
 import com.example.data.VryvRepository
 import com.example.ui.components.StatusBadge
+import com.example.ui.components.VryvFloatingBottomSheet
+import com.example.ui.components.VryvIcons
+import com.example.ui.components.VryvInputField
 import com.example.ui.theme.VryvBg
 import com.example.ui.theme.VryvCard
 import com.example.ui.theme.VryvCardElevated
-import com.example.ui.theme.VryvInputBg
+import com.example.ui.theme.VryvDanger
 import com.example.ui.theme.VryvLime
+import com.example.ui.theme.VryvLine
 import com.example.ui.theme.VryvPink
 import com.example.ui.theme.VryvTextMuted
 import com.example.ui.theme.VryvTextPrimary
 import com.example.ui.theme.VryvTextSecondary
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun BusinessEventsScreen(
     repository: VryvRepository,
@@ -110,11 +104,11 @@ fun BusinessEventsScreen(
             .background(VryvBg)
     ) {
         Column(modifier = Modifier.fillMaxSize()) {
-            // Header
+            // Header matching d2.png
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 12.dp),
+                    .padding(horizontal = 20.dp, vertical = 12.dp),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
@@ -122,52 +116,54 @@ fun BusinessEventsScreen(
                     Text(
                         text = "Мероприятия ${venue.name}",
                         color = VryvTextPrimary,
-                        fontSize = 20.sp,
-                        fontWeight = FontWeight.Bold
+                        fontSize = 22.sp,
+                        fontWeight = FontWeight.ExtraBold,
+                        letterSpacing = (-0.5).sp
                     )
                     Text(
                         text = "Только события вашей площадки (${venueEvents.size})",
                         color = VryvTextSecondary,
-                        fontSize = 12.sp
+                        fontSize = 12.5.sp
                     )
                 }
 
                 IconButton(
                     onClick = onCreateEventClick,
                     modifier = Modifier
-                        .size(38.dp)
+                        .size(40.dp)
                         .clip(CircleShape)
                         .background(VryvLime)
                         .testTag("biz_add_event_header_btn")
                 ) {
                     Icon(
-                        Icons.Default.Add,
+                        imageVector = VryvIcons.Plus,
                         contentDescription = "Создать событие",
-                        tint = Color.Black,
-                        modifier = Modifier.size(20.dp)
+                        tint = Color(0xFF0B0B0F),
+                        modifier = Modifier.size(18.dp)
                     )
                 }
             }
 
-            // Status Filter Tabs
+            // Status Filter Tabs matching d2.png
             LazyRow(
-                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 6.dp),
+                contentPadding = PaddingValues(horizontal = 20.dp, vertical = 6.dp),
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 items(filters) { filter ->
                     val isSelected = filter == selectedFilter
                     Box(
                         modifier = Modifier
-                            .clip(RoundedCornerShape(12.dp))
-                            .background(if (isSelected) VryvLime else VryvCard)
+                            .clip(RoundedCornerShape(999.dp))
+                            .background(if (isSelected) VryvLime else VryvCardElevated)
+                            .border(1.dp, if (isSelected) VryvLime else VryvLine, RoundedCornerShape(999.dp))
                             .clickable { selectedFilter = filter }
                             .padding(horizontal = 14.dp, vertical = 8.dp)
                     ) {
                         Text(
                             text = filter,
-                            color = if (isSelected) Color.Black else VryvTextSecondary,
+                            color = if (isSelected) Color(0xFF0B0B0F) else VryvTextSecondary,
                             fontSize = 13.sp,
-                            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal
+                            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium
                         )
                     }
                 }
@@ -190,8 +186,9 @@ fun BusinessEventsScreen(
                         Spacer(modifier = Modifier.height(10.dp))
                         Box(
                             modifier = Modifier
-                                .clip(RoundedCornerShape(12.dp))
+                                .clip(RoundedCornerShape(14.dp))
                                 .background(VryvCardElevated)
+                                .border(1.dp, VryvLine, RoundedCornerShape(14.dp))
                                 .clickable { onCreateEventClick() }
                                 .padding(horizontal = 16.dp, vertical = 10.dp)
                         ) {
@@ -202,7 +199,7 @@ fun BusinessEventsScreen(
             } else {
                 LazyColumn(
                     modifier = Modifier.weight(1f),
-                    contentPadding = PaddingValues(16.dp),
+                    contentPadding = PaddingValues(horizontal = 20.dp, vertical = 12.dp),
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
                     items(filteredList, key = { it.id }) { event ->
@@ -215,41 +212,38 @@ fun BusinessEventsScreen(
                             onSimulateApproval = { repository.simulateEventApproval(event.id) }
                         )
                     }
+                    item {
+                        Spacer(modifier = Modifier.height(90.dp))
+                    }
                 }
             }
         }
 
-        // FAB
+        // FAB (preserved testTag("biz_fab_create_event"))
         FloatingActionButton(
             onClick = onCreateEventClick,
             containerColor = VryvLime,
-            contentColor = Color.Black,
+            contentColor = Color(0xFF0B0B0F),
             shape = CircleShape,
             modifier = Modifier
                 .align(Alignment.BottomEnd)
-                .padding(20.dp)
+                .padding(end = 20.dp, bottom = 90.dp)
                 .testTag("biz_fab_create_event")
         ) {
-            Icon(Icons.Default.Add, contentDescription = "Создать мероприятие")
+            Icon(VryvIcons.Plus, contentDescription = "Создать мероприятие")
         }
     }
 
     // Cancel Event Bottom Sheet
     if (eventToCancel != null) {
-        ModalBottomSheet(
-            onDismissRequest = { eventToCancel = null },
-            sheetState = rememberModalBottomSheetState(),
-            containerColor = VryvCard
+        VryvFloatingBottomSheet(
+            onDismiss = { eventToCancel = null }
         ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(20.dp)
-            ) {
+            Column(modifier = Modifier.fillMaxWidth()) {
                 Text(
                     text = "Отмена мероприятия",
                     color = VryvTextPrimary,
-                    fontSize = 18.sp,
+                    fontSize = 20.sp,
                     fontWeight = FontWeight.Bold
                 )
                 Spacer(modifier = Modifier.height(6.dp))
@@ -260,21 +254,29 @@ fun BusinessEventsScreen(
                 )
                 Spacer(modifier = Modifier.height(16.dp))
 
-                Text(text = "Причина отмены", color = VryvTextSecondary, fontSize = 12.sp)
+                Text(
+                    text = "ПРИЧИНА ОТМЕНЫ",
+                    color = VryvTextSecondary,
+                    fontSize = 11.sp,
+                    fontWeight = FontWeight.Bold,
+                    letterSpacing = 0.8.sp
+                )
                 Spacer(modifier = Modifier.height(6.dp))
                 OutlinedTextField(
                     value = cancelReason,
                     onValueChange = { cancelReason = it },
-                    shape = RoundedCornerShape(12.dp),
+                    shape = RoundedCornerShape(14.dp),
                     colors = OutlinedTextFieldDefaults.colors(
-                        focusedContainerColor = VryvInputBg,
-                        unfocusedContainerColor = VryvInputBg,
+                        focusedContainerColor = VryvCardElevated,
+                        unfocusedContainerColor = VryvCardElevated,
                         focusedBorderColor = VryvPink,
-                        unfocusedBorderColor = Color.Transparent,
+                        unfocusedBorderColor = VryvLine,
                         focusedTextColor = VryvTextPrimary,
                         unfocusedTextColor = VryvTextPrimary
                     ),
-                    modifier = Modifier.fillMaxWidth().testTag("cancel_reason_input")
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .testTag("cancel_reason_input")
                 )
 
                 Spacer(modifier = Modifier.height(20.dp))
@@ -283,8 +285,8 @@ fun BusinessEventsScreen(
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(50.dp)
-                        .clip(RoundedCornerShape(14.dp))
-                        .background(VryvPink)
+                        .clip(RoundedCornerShape(16.dp))
+                        .background(VryvDanger)
                         .clickable {
                             repository.cancelBusinessEvent(eventToCancel!!.id, cancelReason)
                             eventToCancel = null
@@ -299,28 +301,20 @@ fun BusinessEventsScreen(
                         fontWeight = FontWeight.Bold
                     )
                 }
-
-                Spacer(modifier = Modifier.height(20.dp))
             }
         }
     }
 
     // Reschedule Event Bottom Sheet
     if (eventToReschedule != null) {
-        ModalBottomSheet(
-            onDismissRequest = { eventToReschedule = null },
-            sheetState = rememberModalBottomSheetState(),
-            containerColor = VryvCard
+        VryvFloatingBottomSheet(
+            onDismiss = { eventToReschedule = null }
         ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(20.dp)
-            ) {
+            Column(modifier = Modifier.fillMaxWidth()) {
                 Text(
                     text = "Перенос мероприятия",
                     color = VryvTextPrimary,
-                    fontSize = 18.sp,
+                    fontSize = 20.sp,
                     fontWeight = FontWeight.Bold
                 )
                 Spacer(modifier = Modifier.height(6.dp))
@@ -331,22 +325,18 @@ fun BusinessEventsScreen(
                 )
                 Spacer(modifier = Modifier.height(16.dp))
 
-                Text(text = "Новая дата", color = VryvTextSecondary, fontSize = 12.sp)
-                Spacer(modifier = Modifier.height(4.dp))
-                OutlinedTextField(
+                VryvInputField(
                     value = newRescheduleDate,
                     onValueChange = { newRescheduleDate = it },
-                    modifier = Modifier.fillMaxWidth()
+                    label = "Новая дата"
                 )
 
                 Spacer(modifier = Modifier.height(12.dp))
 
-                Text(text = "Новое время", color = VryvTextSecondary, fontSize = 12.sp)
-                Spacer(modifier = Modifier.height(4.dp))
-                OutlinedTextField(
+                VryvInputField(
                     value = newRescheduleTime,
                     onValueChange = { newRescheduleTime = it },
-                    modifier = Modifier.fillMaxWidth()
+                    label = "Новое время"
                 )
 
                 Spacer(modifier = Modifier.height(20.dp))
@@ -355,7 +345,7 @@ fun BusinessEventsScreen(
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(50.dp)
-                        .clip(RoundedCornerShape(14.dp))
+                        .clip(RoundedCornerShape(16.dp))
                         .background(VryvLime)
                         .clickable {
                             repository.rescheduleBusinessEvent(
@@ -369,13 +359,11 @@ fun BusinessEventsScreen(
                 ) {
                     Text(
                         text = "Сохранить новую дату",
-                        color = Color.Black,
+                        color = Color(0xFF0B0B0F),
                         fontSize = 14.sp,
                         fontWeight = FontWeight.Bold
                     )
                 }
-
-                Spacer(modifier = Modifier.height(20.dp))
             }
         }
     }
@@ -395,8 +383,9 @@ private fun BusinessEventRowItem(
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(18.dp))
+            .clip(RoundedCornerShape(20.dp))
             .background(VryvCard)
+            .border(1.dp, VryvLine, RoundedCornerShape(20.dp))
             .clickable { onClick() }
             .padding(12.dp)
     ) {
@@ -410,7 +399,7 @@ private fun BusinessEventRowItem(
                     contentDescription = null,
                     contentScale = ContentScale.Crop,
                     modifier = Modifier
-                        .size(76.dp)
+                        .size(78.dp)
                         .clip(RoundedCornerShape(14.dp))
                 )
 
@@ -430,7 +419,7 @@ private fun BusinessEventRowItem(
                                 modifier = Modifier.size(28.dp)
                             ) {
                                 Icon(
-                                    Icons.Default.MoreVert,
+                                    imageVector = VryvIcons.More,
                                     contentDescription = "Действия",
                                     tint = VryvTextSecondary,
                                     modifier = Modifier.size(18.dp)
@@ -443,7 +432,7 @@ private fun BusinessEventRowItem(
                             ) {
                                 DropdownMenuItem(
                                     text = { Text("Дублировать", color = VryvTextPrimary) },
-                                    leadingIcon = { Icon(Icons.Default.ContentCopy, contentDescription = null, tint = VryvLime) },
+                                    leadingIcon = { Icon(VryvIcons.Copy, contentDescription = null, tint = VryvLime, modifier = Modifier.size(16.dp)) },
                                     onClick = {
                                         showMenu = false
                                         onDuplicateClick()
@@ -451,7 +440,7 @@ private fun BusinessEventRowItem(
                                 )
                                 DropdownMenuItem(
                                     text = { Text("Перенести дату", color = VryvTextPrimary) },
-                                    leadingIcon = { Icon(Icons.Default.CalendarMonth, contentDescription = null, tint = VryvLime) },
+                                    leadingIcon = { Icon(VryvIcons.Calendar, contentDescription = null, tint = VryvLime, modifier = Modifier.size(16.dp)) },
                                     onClick = {
                                         showMenu = false
                                         onRescheduleClick()
@@ -460,7 +449,7 @@ private fun BusinessEventRowItem(
                                 if (event.status != EventStatus.CANCELLED) {
                                     DropdownMenuItem(
                                         text = { Text("Отменить событие", color = VryvPink) },
-                                        leadingIcon = { Icon(Icons.Default.Cancel, contentDescription = null, tint = VryvPink) },
+                                        leadingIcon = { Icon(VryvIcons.Close, contentDescription = null, tint = VryvPink, modifier = Modifier.size(16.dp)) },
                                         onClick = {
                                             showMenu = false
                                             onCancelClick()
@@ -476,7 +465,7 @@ private fun BusinessEventRowItem(
                     Text(
                         text = event.title,
                         color = VryvTextPrimary,
-                        fontSize = 15.sp,
+                        fontSize = 15.5.sp,
                         fontWeight = FontWeight.Bold,
                         maxLines = 1
                     )
@@ -512,14 +501,13 @@ private fun BusinessEventRowItem(
                 }
             }
 
-            // If event is in MODERATION, show demo moderation approval helper
             if (event.status == EventStatus.MODERATION) {
                 Spacer(modifier = Modifier.height(10.dp))
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
                         .clip(RoundedCornerShape(10.dp))
-                        .background(Color(0x22C7FF28))
+                        .background(VryvLime.copy(alpha = 0.14f))
                         .clickable { onSimulateApproval() }
                         .padding(horizontal = 12.dp, vertical = 8.dp)
                 ) {
@@ -534,7 +522,7 @@ private fun BusinessEventRowItem(
                             fontSize = 12.sp,
                             fontWeight = FontWeight.Bold
                         )
-                        Icon(Icons.Default.CheckCircle, contentDescription = null, tint = VryvLime, modifier = Modifier.size(16.dp))
+                        Icon(VryvIcons.Check, contentDescription = null, tint = VryvLime, modifier = Modifier.size(16.dp))
                     }
                 }
             }

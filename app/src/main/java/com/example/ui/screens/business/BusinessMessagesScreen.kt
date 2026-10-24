@@ -2,6 +2,7 @@ package com.example.ui.screens.business
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -19,17 +20,11 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -40,6 +35,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -47,17 +43,17 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.data.BusinessInquiryMessage
 import com.example.data.VryvRepository
+import com.example.ui.components.VryvFloatingBottomSheet
+import com.example.ui.components.VryvIcons
 import com.example.ui.theme.VryvBg
 import com.example.ui.theme.VryvCard
 import com.example.ui.theme.VryvCardElevated
-import com.example.ui.theme.VryvInputBg
 import com.example.ui.theme.VryvLime
-import com.example.ui.theme.VryvPink
+import com.example.ui.theme.VryvLine
 import com.example.ui.theme.VryvTextMuted
 import com.example.ui.theme.VryvTextPrimary
 import com.example.ui.theme.VryvTextSecondary
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun BusinessMessagesScreen(
     repository: VryvRepository,
@@ -74,17 +70,18 @@ fun BusinessMessagesScreen(
             .fillMaxSize()
             .background(VryvBg)
     ) {
-        // Header
+        // Header matching d5.png
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 14.dp)
+                .padding(horizontal = 20.dp, vertical = 14.dp)
         ) {
             Text(
                 text = "Сообщения заведения",
                 color = VryvTextPrimary,
-                fontSize = 22.sp,
-                fontWeight = FontWeight.Bold
+                fontSize = 24.sp,
+                fontWeight = FontWeight.ExtraBold,
+                letterSpacing = (-0.5).sp
             )
             Text(
                 text = "Обращения и вопросы гостей к ${venue.name}",
@@ -109,15 +106,16 @@ fun BusinessMessagesScreen(
         } else {
             LazyColumn(
                 modifier = Modifier.weight(1f),
-                contentPadding = PaddingValues(16.dp),
+                contentPadding = PaddingValues(horizontal = 20.dp, vertical = 8.dp),
                 verticalArrangement = Arrangement.spacedBy(10.dp)
             ) {
                 items(inquiries, key = { it.id }) { item ->
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .clip(RoundedCornerShape(16.dp))
+                            .clip(RoundedCornerShape(18.dp))
                             .background(VryvCard)
+                            .border(1.dp, VryvLine, RoundedCornerShape(18.dp))
                             .clickable { activeInquiry = item }
                             .padding(14.dp)
                     ) {
@@ -125,8 +123,9 @@ fun BusinessMessagesScreen(
                             Image(
                                 painter = painterResource(id = item.userAvatarRes),
                                 contentDescription = null,
+                                contentScale = ContentScale.Crop,
                                 modifier = Modifier
-                                    .size(46.dp)
+                                    .size(48.dp)
                                     .clip(CircleShape)
                             )
                             Spacer(modifier = Modifier.width(12.dp))
@@ -169,39 +168,36 @@ fun BusinessMessagesScreen(
         }
     }
 
-    // Inquiry Reply Modal Sheet
+    // Inquiry Reply Modal Sheet matching chat.png
     if (activeInquiry != null) {
-        ModalBottomSheet(
-            onDismissRequest = { activeInquiry = null },
-            sheetState = rememberModalBottomSheetState(),
-            containerColor = VryvCard
+        VryvFloatingBottomSheet(
+            onDismiss = { activeInquiry = null }
         ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(20.dp)
-            ) {
+            Column(modifier = Modifier.fillMaxWidth()) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Image(
                         painter = painterResource(id = activeInquiry!!.userAvatarRes),
                         contentDescription = null,
-                        modifier = Modifier.size(40.dp).clip(CircleShape)
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier
+                            .size(42.dp)
+                            .clip(CircleShape)
                     )
                     Spacer(modifier = Modifier.width(12.dp))
                     Column {
                         Text(text = activeInquiry!!.userName, color = VryvTextPrimary, fontSize = 16.sp, fontWeight = FontWeight.Bold)
-                        Text(text = activeInquiry!!.subject, color = VryvLime, fontSize = 12.sp)
+                        Text(text = activeInquiry!!.subject, color = VryvLime, fontSize = 12.5.sp, fontWeight = FontWeight.SemiBold)
                     }
                 }
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // Chat history for this inquiry
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .clip(RoundedCornerShape(12.dp))
+                        .clip(RoundedCornerShape(16.dp))
                         .background(VryvBg)
+                        .border(1.dp, VryvLine, RoundedCornerShape(16.dp))
                         .padding(12.dp),
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
@@ -217,14 +213,19 @@ fun BusinessMessagesScreen(
                         ) {
                             Box(
                                 modifier = Modifier
-                                    .clip(RoundedCornerShape(12.dp))
+                                    .clip(RoundedCornerShape(14.dp))
                                     .background(if (msg.isMe) VryvLime.copy(alpha = 0.2f) else VryvCardElevated)
-                                    .padding(horizontal = 12.dp, vertical = 8.dp)
+                                    .border(
+                                        width = 1.dp,
+                                        color = if (msg.isMe) VryvLime.copy(alpha = 0.4f) else VryvLine,
+                                        shape = RoundedCornerShape(14.dp)
+                                    )
+                                    .padding(horizontal = 12.dp, vertical = 9.dp)
                             ) {
                                 Text(
                                     text = msg.text,
                                     color = VryvTextPrimary,
-                                    fontSize = 13.sp
+                                    fontSize = 13.5.sp
                                 )
                             }
                         }
@@ -233,7 +234,6 @@ fun BusinessMessagesScreen(
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // Reply field
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     verticalAlignment = Alignment.CenterVertically
@@ -241,17 +241,19 @@ fun BusinessMessagesScreen(
                     OutlinedTextField(
                         value = replyText,
                         onValueChange = { replyText = it },
-                        placeholder = { Text("Ответ от имени заведения...", color = VryvTextMuted, fontSize = 13.sp) },
-                        shape = RoundedCornerShape(12.dp),
+                        placeholder = { Text("Ответ от имени заведения...", color = VryvTextMuted, fontSize = 13.5.sp) },
+                        shape = RoundedCornerShape(999.dp),
                         colors = OutlinedTextFieldDefaults.colors(
-                            focusedContainerColor = VryvInputBg,
-                            unfocusedContainerColor = VryvInputBg,
+                            focusedContainerColor = VryvCardElevated,
+                            unfocusedContainerColor = VryvCardElevated,
                             focusedBorderColor = VryvLime,
-                            unfocusedBorderColor = Color.Transparent,
+                            unfocusedBorderColor = VryvLine,
                             focusedTextColor = VryvTextPrimary,
                             unfocusedTextColor = VryvTextPrimary
                         ),
-                        modifier = Modifier.weight(1f).testTag("biz_reply_input")
+                        modifier = Modifier
+                            .weight(1f)
+                            .testTag("biz_reply_input")
                     )
 
                     Spacer(modifier = Modifier.width(8.dp))
@@ -270,11 +272,14 @@ fun BusinessMessagesScreen(
                             .background(VryvLime)
                             .testTag("biz_reply_send_btn")
                     ) {
-                        Icon(Icons.AutoMirrored.Filled.Send, contentDescription = "Отправить", tint = Color.Black, modifier = Modifier.size(20.dp))
+                        Icon(
+                            imageVector = VryvIcons.Send,
+                            contentDescription = "Отправить",
+                            tint = Color(0xFF0B0B0F),
+                            modifier = Modifier.size(18.dp)
+                        )
                     }
                 }
-
-                Spacer(modifier = Modifier.height(20.dp))
             }
         }
     }

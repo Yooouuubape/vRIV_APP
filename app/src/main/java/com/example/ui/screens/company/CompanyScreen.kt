@@ -23,27 +23,10 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Chat
-import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.Group
-import androidx.compose.material.icons.filled.HourglassTop
-import androidx.compose.material.icons.filled.Lock
-import androidx.compose.material.icons.filled.PersonAdd
-import androidx.compose.material.icons.filled.Public
 import androidx.compose.material3.Badge
 import androidx.compose.material3.BadgedBox
-import androidx.compose.material3.FloatingActionButton
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -64,8 +47,18 @@ import androidx.compose.ui.unit.sp
 import com.example.R
 import com.example.data.CompanyGroup
 import com.example.data.CompanionUser
-import com.example.data.GroupApplication
 import com.example.data.VryvRepository
+import com.example.ui.components.VryvAvatarStack
+import com.example.ui.components.VryvButton
+import com.example.ui.components.VryvButtonStyle
+import com.example.ui.components.VryvChip
+import com.example.ui.components.VryvFloatingBottomSheet
+import com.example.ui.components.VryvIconButton
+import com.example.ui.components.VryvIcons
+import com.example.ui.components.VryvStatusPill
+import com.example.ui.components.VryvStatusStyle
+import com.example.ui.components.VryvTag
+import com.example.ui.components.VryvTagStyle
 import com.example.ui.theme.VryvBg
 import com.example.ui.theme.VryvCard
 import com.example.ui.theme.VryvCardElevated
@@ -76,7 +69,7 @@ import com.example.ui.theme.VryvTextMuted
 import com.example.ui.theme.VryvTextPrimary
 import com.example.ui.theme.VryvTextSecondary
 
-@OptIn(ExperimentalLayoutApi::class, ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun CompanyScreen(
     repository: VryvRepository,
@@ -102,17 +95,27 @@ fun CompanyScreen(
         if (filterEventId != null) events.find { it.id == filterEventId } else null
     }
 
-    // Filter groups by specific event if navigated from event details
-    val visibleGroups = remember(allGroups, filterEventId) {
-        if (filterEventId != null) {
-            allGroups.filter { it.eventId == filterEventId }
-        } else {
-            allGroups
+    var selectedEventFilterChip by remember(filterEventId) {
+        mutableStateOf(targetEvent?.title ?: "Все события")
+    }
+
+    val eventFilterChips = listOf("Все события", "Techno Room", "Indie Jam", "Стендап")
+
+    val visibleGroups = remember(allGroups, filterEventId, selectedEventFilterChip) {
+        when {
+            filterEventId != null -> allGroups.filter { it.eventId == filterEventId }
+            selectedEventFilterChip == "Все события" -> allGroups
+            else -> allGroups.filter {
+                it.eventTitle.contains(selectedEventFilterChip, ignoreCase = true) ||
+                it.title.contains(selectedEventFilterChip, ignoreCase = true)
+            }.ifEmpty { allGroups }
         }
     }
 
-    // Modal state for group applications management
+    // Modal state for group applications management / group details (compPage / compMember)
     var managingApplicationsGroup by remember { mutableStateOf<CompanyGroup?>(null) }
+    // Modal state for companion profile sheet (member.png)
+    var selectedCompanionProfile by remember { mutableStateOf<CompanionUser?>(null) }
 
     Box(
         modifier = modifier
@@ -120,80 +123,115 @@ fun CompanyScreen(
             .background(VryvBg)
     ) {
         Column(modifier = Modifier.fillMaxSize()) {
-            // Header
+            // Header matching screen_05.png
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 12.dp),
+                    .padding(horizontal = 20.dp, vertical = 12.dp),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
+                Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.weight(1f)) {
                     if (filterEventId != null) {
-                        IconButton(
-                            onClick = onClearEventFilter,
-                            modifier = Modifier.size(36.dp)
-                        ) {
-                            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Назад к событию", tint = VryvTextPrimary)
-                        }
-                        Spacer(modifier = Modifier.width(6.dp))
+                        VryvIconButton(
+                            icon = VryvIcons.Back,
+                            onClick = onClearEventFilter
+                        )
+                        Spacer(modifier = Modifier.width(10.dp))
                     }
                     Column {
                         Text(
                             text = if (targetEvent != null) "Компании на событие" else "Компания",
                             color = VryvTextPrimary,
-                            fontSize = 22.sp,
-                            fontWeight = FontWeight.Bold
+                            fontSize = 26.sp,
+                            fontWeight = FontWeight.ExtraBold,
+                            letterSpacing = (-0.6).sp
                         )
                         Text(
-                            text = if (targetEvent != null) targetEvent.title else "Ищи друзей и группы на события Минска",
+                            text = if (targetEvent != null) targetEvent.title else "Люди и группы на события Минска",
                             color = VryvTextSecondary,
-                            fontSize = 12.sp,
+                            fontSize = 13.sp,
                             maxLines = 1,
                             overflow = TextOverflow.Ellipsis
                         )
                     }
                 }
 
-                IconButton(
-                    onClick = onOpenMessagesList,
-                    modifier = Modifier
-                        .size(42.dp)
-                        .clip(CircleShape)
-                        .background(VryvCard)
-                        .testTag("messages_list_button")
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    BadgedBox(
-                        badge = {
-                            if (totalUnread > 0) {
-                                Badge(
-                                    containerColor = VryvPink,
-                                    contentColor = Color.White
-                                ) {
-                                    Text("$totalUnread", fontSize = 10.sp)
+                    // Messages icon button with unread badge
+                    Box(
+                        modifier = Modifier
+                            .size(40.dp)
+                            .clip(CircleShape)
+                            .background(VryvCardElevated)
+                            .border(1.dp, VryvLine, CircleShape)
+                            .clickable { onOpenMessagesList() }
+                            .testTag("messages_list_button"),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        BadgedBox(
+                            badge = {
+                                if (totalUnread > 0) {
+                                    Badge(
+                                        containerColor = VryvPink,
+                                        contentColor = Color.White
+                                    ) {
+                                        Text("$totalUnread", fontSize = 10.sp, fontWeight = FontWeight.Bold)
+                                    }
                                 }
                             }
+                        ) {
+                            Icon(
+                                imageVector = VryvIcons.Msg,
+                                contentDescription = "Сообщения",
+                                tint = VryvTextPrimary,
+                                modifier = Modifier.size(18.dp)
+                            )
                         }
+                    }
+
+                    // "+ Создать" pink pill button matching screen_05.png
+                    Box(
+                        modifier = Modifier
+                            .height(40.dp)
+                            .clip(RoundedCornerShape(999.dp))
+                            .background(VryvPink)
+                            .clickable { onCreateCompanyClick() }
+                            .padding(horizontal = 14.dp)
+                            .testTag("create_company_fab"),
+                        contentAlignment = Alignment.Center
                     ) {
-                        Icon(
-                            imageVector = Icons.Default.Chat,
-                            contentDescription = "Сообщения",
-                            tint = VryvTextPrimary,
-                            modifier = Modifier.size(20.dp)
-                        )
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(
+                                imageVector = VryvIcons.Plus,
+                                contentDescription = "Создать компанию",
+                                tint = Color.White,
+                                modifier = Modifier.size(15.dp)
+                            )
+                            Spacer(modifier = Modifier.width(5.dp))
+                            Text(
+                                text = "Создать",
+                                color = Color.White,
+                                fontSize = 13.sp,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
                     }
                 }
             }
 
-            // Event context banner
+            // Event context banner or filter chips row (screen_05.png)
             if (targetEvent != null) {
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 16.dp, vertical = 4.dp)
+                        .padding(horizontal = 20.dp, vertical = 4.dp)
                         .clip(RoundedCornerShape(16.dp))
-                        .background(Color(0x33FF1D8E))
-                        .border(1.dp, VryvPink.copy(alpha = 0.5f), RoundedCornerShape(16.dp))
+                        .background(VryvPink.copy(alpha = 0.14f))
+                        .border(1.dp, VryvPink.copy(alpha = 0.4f), RoundedCornerShape(16.dp))
                         .padding(horizontal = 14.dp, vertical = 10.dp)
                 ) {
                     Row(
@@ -218,55 +256,92 @@ fun CompanyScreen(
                                 overflow = TextOverflow.Ellipsis
                             )
                         }
-                        IconButton(
-                            onClick = onClearEventFilter,
-                            modifier = Modifier.size(24.dp)
+                        Box(
+                            modifier = Modifier
+                                .size(24.dp)
+                                .clip(CircleShape)
+                                .clickable { onClearEventFilter() },
+                            contentAlignment = Alignment.Center
                         ) {
                             Icon(
-                                imageVector = Icons.Default.Close,
+                                imageVector = VryvIcons.Close,
                                 contentDescription = "Сбросить фильтр",
                                 tint = VryvTextSecondary,
-                                modifier = Modifier.size(16.dp)
+                                modifier = Modifier.size(15.dp)
                             )
                         }
+                    }
+                }
+            } else {
+                LazyRow(
+                    contentPadding = PaddingValues(horizontal = 20.dp, vertical = 4.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    items(eventFilterChips) { chip ->
+                        VryvChip(
+                            text = chip,
+                            selected = selectedEventFilterChip == chip,
+                            onClick = { selectedEventFilterChip = chip }
+                        )
                     }
                 }
             }
 
             LazyColumn(
                 modifier = Modifier.fillMaxSize(),
-                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp)
+                contentPadding = PaddingValues(horizontal = 20.dp, vertical = 10.dp)
             ) {
-                // Section 1: Люди ищут компанию
+                // Section 1: Хотят пойти вместе (screen_05.png & compSearch.png)
                 item {
-                    Text(
-                        text = "Хотят пойти вместе",
-                        color = VryvTextPrimary,
-                        fontSize = 17.sp,
-                        fontWeight = FontWeight.Bold,
-                        modifier = Modifier.padding(bottom = 10.dp)
-                    )
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(bottom = 10.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = "Хотят пойти вместе",
+                            color = VryvTextPrimary,
+                            fontSize = 17.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                        Text(
+                            text = "${activeCompanions.size} чел.",
+                            color = VryvTextSecondary,
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.SemiBold
+                        )
+                    }
                 }
 
                 items(activeCompanions) { companion ->
                     CompanionCardItem(
                         companion = companion,
+                        onCardClick = { selectedCompanionProfile = companion },
                         onRequestToggle = { repository.toggleCompanionRequest(companion.id) },
                         onMessageClick = { onOpenDirectChat(companion.id) }
                     )
                     Spacer(modifier = Modifier.height(10.dp))
                 }
 
-                // Section 2: Группы мероприятия
+                // Section 2: Группы мероприятия (screen_05.png)
                 item {
-                    Spacer(modifier = Modifier.height(16.dp))
-                    Text(
-                        text = if (targetEvent != null) "Группы на «${targetEvent.title}» (${visibleGroups.size})" else "Все компании (${visibleGroups.size})",
-                        color = VryvTextPrimary,
-                        fontSize = 17.sp,
-                        fontWeight = FontWeight.Bold,
-                        modifier = Modifier.padding(bottom = 10.dp)
-                    )
+                    Spacer(modifier = Modifier.height(14.dp))
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(bottom = 10.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = if (targetEvent != null) "Группы на «${targetEvent.title}» (${visibleGroups.size})" else "Все компании (${visibleGroups.size})",
+                            color = VryvTextPrimary,
+                            fontSize = 17.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
                 }
 
                 if (visibleGroups.isEmpty()) {
@@ -274,8 +349,9 @@ fun CompanyScreen(
                         Box(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .clip(RoundedCornerShape(16.dp))
+                                .clip(RoundedCornerShape(20.dp))
                                 .background(VryvCard)
+                                .border(1.dp, VryvLine, RoundedCornerShape(20.dp))
                                 .padding(24.dp),
                             contentAlignment = Alignment.Center
                         ) {
@@ -286,15 +362,11 @@ fun CompanyScreen(
                                     fontSize = 13.5.sp
                                 )
                                 Spacer(modifier = Modifier.height(12.dp))
-                                Box(
-                                    modifier = Modifier
-                                        .clip(RoundedCornerShape(12.dp))
-                                        .background(VryvPink)
-                                        .clickable { onCreateCompanyClick() }
-                                        .padding(horizontal = 16.dp, vertical = 10.dp)
-                                ) {
-                                    Text(text = "Создать первую компанию", color = Color.White, fontSize = 13.sp, fontWeight = FontWeight.Bold)
-                                }
+                                VryvButton(
+                                    text = "Создать первую компанию",
+                                    style = VryvButtonStyle.PrimaryPink,
+                                    onClick = onCreateCompanyClick
+                                )
                             }
                         }
                     }
@@ -320,57 +392,113 @@ fun CompanyScreen(
                 }
 
                 item {
-                    Spacer(modifier = Modifier.height(90.dp))
+                    Spacer(modifier = Modifier.height(100.dp))
                 }
-            }
-        }
-
-        // Floating Action Button to create company
-        FloatingActionButton(
-            onClick = onCreateCompanyClick,
-            containerColor = VryvPink,
-            contentColor = Color.White,
-            modifier = Modifier
-                .align(Alignment.BottomEnd)
-                .padding(end = 20.dp, bottom = 80.dp)
-                .testTag("create_company_fab")
-        ) {
-            Row(
-                modifier = Modifier.padding(horizontal = 16.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Icon(Icons.Default.Add, contentDescription = "Создать компанию")
-                Spacer(modifier = Modifier.width(6.dp))
-                Text(
-                    text = "Создать",
-                    fontSize = 14.sp,
-                    fontWeight = FontWeight.Bold
-                )
             }
         }
     }
 
-    // Applications Management Modal Bottom Sheet (for group creator)
+    // Companion Profile Modal Bottom Sheet (member.png)
+    if (selectedCompanionProfile != null) {
+        val comp = selectedCompanionProfile!!
+        VryvFloatingBottomSheet(
+            onDismiss = { selectedCompanionProfile = null }
+        ) {
+            Column(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Box {
+                    Image(
+                        painter = painterResource(id = comp.avatarRes),
+                        contentDescription = comp.name,
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier
+                            .size(80.dp)
+                            .clip(CircleShape)
+                    )
+                    if (comp.isOnline) {
+                        Box(
+                            modifier = Modifier
+                                .size(16.dp)
+                                .clip(CircleShape)
+                                .background(VryvLime)
+                                .border(2.5.dp, VryvCard, CircleShape)
+                                .align(Alignment.BottomEnd)
+                        )
+                    }
+                }
+                Spacer(modifier = Modifier.height(10.dp))
+                Text(
+                    text = comp.name,
+                    color = VryvTextPrimary,
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight.Bold
+                )
+                Text(
+                    text = "@${comp.username} · Минск",
+                    color = VryvTextSecondary,
+                    fontSize = 13.sp
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    text = comp.bio,
+                    color = VryvTextPrimary,
+                    fontSize = 13.5.sp
+                )
+                Spacer(modifier = Modifier.height(12.dp))
+                FlowRow(
+                    horizontalArrangement = Arrangement.spacedBy(6.dp),
+                    verticalArrangement = Arrangement.spacedBy(6.dp)
+                ) {
+                    comp.sharedTags.forEach { tag ->
+                        VryvTag(text = tag, style = VryvTagStyle.Lime)
+                    }
+                }
+                Spacer(modifier = Modifier.height(18.dp))
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(10.dp)
+                ) {
+                    VryvButton(
+                        text = "Пожаловаться",
+                        style = VryvButtonStyle.SecondaryDark,
+                        modifier = Modifier.weight(1f),
+                        onClick = {
+                            selectedCompanionProfile = null
+                            onReportClick("Пользователь", comp.name)
+                        }
+                    )
+                    VryvButton(
+                        text = "Написать",
+                        style = VryvButtonStyle.PrimaryPink,
+                        modifier = Modifier.weight(1f),
+                        onClick = {
+                            selectedCompanionProfile = null
+                            onOpenDirectChat(comp.id)
+                        }
+                    )
+                }
+            }
+        }
+    }
+
+    // Applications Management Modal Bottom Sheet (compMember.png / compPage.png)
     if (managingApplicationsGroup != null) {
         val group = managingApplicationsGroup!!
         val pendingApps = group.pendingApplications.filter { it.status == "PENDING" }
 
-        ModalBottomSheet(
-            onDismissRequest = { managingApplicationsGroup = null },
-            sheetState = rememberModalBottomSheetState(),
-            containerColor = VryvCard
+        VryvFloatingBottomSheet(
+            onDismiss = { managingApplicationsGroup = null }
         ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(20.dp)
-            ) {
+            Column(modifier = Modifier.fillMaxWidth()) {
                 Text(
                     text = "Заявки в компанию «${group.title}»",
                     color = VryvTextPrimary,
                     fontSize = 18.sp,
                     fontWeight = FontWeight.Bold
                 )
+                Spacer(modifier = Modifier.height(2.dp))
                 Text(
                     text = "Свободно мест: ${group.maxMembers - group.currentMembersCount} из ${group.maxMembers}",
                     color = VryvLime,
@@ -393,7 +521,8 @@ fun CompanyScreen(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .clip(RoundedCornerShape(14.dp))
-                                .background(VryvBg)
+                                .background(VryvCardElevated)
+                                .border(1.dp, VryvLine, RoundedCornerShape(14.dp))
                                 .padding(12.dp),
                             horizontalArrangement = Arrangement.SpaceBetween,
                             verticalAlignment = Alignment.CenterVertically
@@ -402,7 +531,10 @@ fun CompanyScreen(
                                 Image(
                                     painter = painterResource(id = app.userAvatarRes),
                                     contentDescription = null,
-                                    modifier = Modifier.size(40.dp).clip(CircleShape)
+                                    contentScale = ContentScale.Crop,
+                                    modifier = Modifier
+                                        .size(40.dp)
+                                        .clip(CircleShape)
                                 )
                                 Spacer(modifier = Modifier.width(10.dp))
                                 Column {
@@ -412,7 +544,6 @@ fun CompanyScreen(
                             }
 
                             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                                // Accept Button
                                 Box(
                                     modifier = Modifier
                                         .clip(RoundedCornerShape(10.dp))
@@ -423,29 +554,26 @@ fun CompanyScreen(
                                         }
                                         .padding(horizontal = 12.dp, vertical = 6.dp)
                                 ) {
-                                    Text(text = "Принять", color = Color.Black, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                                    Text(text = "Принять", color = Color(0xFF0B0B0F), fontSize = 12.sp, fontWeight = FontWeight.Bold)
                                 }
 
-                                // Reject Button
                                 Box(
                                     modifier = Modifier
                                         .clip(RoundedCornerShape(10.dp))
-                                        .background(VryvCardElevated)
+                                        .background(VryvBg)
                                         .clickable {
                                             repository.rejectGroupApplication(group.id, app.userId)
                                             managingApplicationsGroup = repository.groups.value.find { it.id == group.id }
                                         }
                                         .padding(horizontal = 10.dp, vertical = 6.dp)
                                 ) {
-                                    Text(text = "Отклонить", color = VryvPink, fontSize = 12.sp)
+                                    Text(text = "Отклонить", color = VryvPink, fontSize = 12.sp, fontWeight = FontWeight.SemiBold)
                                 }
                             }
                         }
                         Spacer(modifier = Modifier.height(8.dp))
                     }
                 }
-
-                Spacer(modifier = Modifier.height(20.dp))
             }
         }
     }
@@ -467,7 +595,11 @@ private fun GroupCardItem(
             .fillMaxWidth()
             .clip(RoundedCornerShape(20.dp))
             .background(VryvCard)
-            .border(1.dp, if (isMember) VryvLime.copy(alpha = 0.4f) else VryvLine, RoundedCornerShape(20.dp))
+            .border(
+                width = 1.dp,
+                color = if (isMember) VryvLime.copy(alpha = 0.4f) else VryvLine,
+                shape = RoundedCornerShape(20.dp)
+            )
             .padding(16.dp)
     ) {
         Column {
@@ -483,7 +615,7 @@ private fun GroupCardItem(
                         fontSize = 17.sp,
                         fontWeight = FontWeight.Bold
                     )
-                    Spacer(modifier = Modifier.height(2.dp))
+                    Spacer(modifier = Modifier.height(3.dp))
                     Text(
                         text = "${group.meetingPlace} · в ${group.meetingTime}",
                         color = VryvTextSecondary,
@@ -491,58 +623,25 @@ private fun GroupCardItem(
                     )
                 }
 
-                // Type Badge (Open / Closed)
-                Box(
-                    modifier = Modifier
-                        .clip(RoundedCornerShape(8.dp))
-                        .background(if (group.isOpen) Color(0x33C7FF28) else Color(0x33FF1D8E))
-                        .padding(horizontal = 8.dp, vertical = 4.dp)
-                ) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(
-                            imageVector = if (group.isOpen) Icons.Default.Public else Icons.Default.Lock,
-                            contentDescription = null,
-                            tint = if (group.isOpen) VryvLime else VryvPink,
-                            modifier = Modifier.size(12.dp)
-                        )
-                        Spacer(modifier = Modifier.width(4.dp))
-                        Text(
-                            text = if (group.isOpen) "Открытая" else "По заявке",
-                            color = if (group.isOpen) VryvLime else VryvPink,
-                            fontSize = 11.sp,
-                            fontWeight = FontWeight.Bold
-                        )
-                    }
-                }
+                VryvStatusPill(
+                    text = if (group.isOpen) "Открытая" else "По заявке",
+                    style = if (group.isOpen) VryvStatusStyle.Lime else VryvStatusStyle.Pink
+                )
             }
 
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(14.dp))
 
-            // Member Avatars & Count
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Row(modifier = Modifier.padding(end = 8.dp)) {
-                        group.memberAvatars.take(4).forEachIndexed { index, avatarRes ->
-                            Box(
-                                modifier = Modifier
-                                    .size(28.dp)
-                                    .clip(CircleShape)
-                                    .border(1.5.dp, VryvCard, CircleShape)
-                            ) {
-                                Image(
-                                    painter = painterResource(id = avatarRes),
-                                    contentDescription = null,
-                                    contentScale = ContentScale.Crop,
-                                    modifier = Modifier.fillMaxSize()
-                                )
-                            }
-                        }
-                    }
-
+                    VryvAvatarStack(
+                        avatarResIds = group.memberAvatars.take(4),
+                        avatarSize = 28.dp
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
                     Text(
                         text = "${group.currentMembersCount} из ${group.maxMembers} мест",
                         color = if (isFull) VryvPink else VryvLime,
@@ -551,7 +650,6 @@ private fun GroupCardItem(
                     )
                 }
 
-                // Action Button based on membership & role
                 when {
                     isUserCreator && pendingApplicationsCount > 0 -> {
                         Box(
@@ -563,7 +661,7 @@ private fun GroupCardItem(
                         ) {
                             Text(
                                 text = "Заявки ($pendingApplicationsCount)",
-                                color = Color.Black,
+                                color = Color(0xFF0B0B0F),
                                 fontSize = 12.5.sp,
                                 fontWeight = FontWeight.Bold
                             )
@@ -574,14 +672,19 @@ private fun GroupCardItem(
                         Box(
                             modifier = Modifier
                                 .clip(RoundedCornerShape(12.dp))
-                                .background(Color(0x22C7FF28))
+                                .background(VryvLime.copy(alpha = 0.14f))
                                 .border(1.dp, VryvLime, RoundedCornerShape(12.dp))
                                 .clickable { onChatClick() }
                                 .padding(horizontal = 14.dp, vertical = 8.dp)
                                 .testTag("group_chat_btn_${group.id}")
                         ) {
                             Row(verticalAlignment = Alignment.CenterVertically) {
-                                Icon(Icons.Default.Chat, contentDescription = null, tint = VryvLime, modifier = Modifier.size(14.dp))
+                                Icon(
+                                    imageVector = VryvIcons.Msg,
+                                    contentDescription = null,
+                                    tint = VryvLime,
+                                    modifier = Modifier.size(14.dp)
+                                )
                                 Spacer(modifier = Modifier.width(6.dp))
                                 Text(
                                     text = "В чат",
@@ -598,15 +701,22 @@ private fun GroupCardItem(
                             modifier = Modifier
                                 .clip(RoundedCornerShape(12.dp))
                                 .background(VryvCardElevated)
+                                .border(1.dp, VryvLine, RoundedCornerShape(12.dp))
                                 .padding(horizontal = 14.dp, vertical = 8.dp)
                         ) {
                             Row(verticalAlignment = Alignment.CenterVertically) {
-                                Icon(Icons.Default.HourglassTop, contentDescription = null, tint = VryvTextMuted, modifier = Modifier.size(14.dp))
-                                Spacer(modifier = Modifier.width(4.dp))
+                                Icon(
+                                    imageVector = VryvIcons.Clock,
+                                    contentDescription = null,
+                                    tint = VryvTextMuted,
+                                    modifier = Modifier.size(14.dp)
+                                )
+                                Spacer(modifier = Modifier.width(5.dp))
                                 Text(
                                     text = "Ожидает решения",
                                     color = VryvTextSecondary,
-                                    fontSize = 12.sp
+                                    fontSize = 12.sp,
+                                    fontWeight = FontWeight.SemiBold
                                 )
                             }
                         }
@@ -632,6 +742,11 @@ private fun GroupCardItem(
                             modifier = Modifier
                                 .clip(RoundedCornerShape(12.dp))
                                 .background(if (group.isOpen) VryvPink else VryvCardElevated)
+                                .border(
+                                    width = 1.dp,
+                                    color = if (group.isOpen) VryvPink else VryvLine,
+                                    shape = RoundedCornerShape(12.dp)
+                                )
                                 .clickable { onJoinClick() }
                                 .padding(horizontal = 16.dp, vertical = 8.dp)
                                 .testTag("group_join_btn_${group.id}")
@@ -653,6 +768,7 @@ private fun GroupCardItem(
 @Composable
 private fun CompanionCardItem(
     companion: CompanionUser,
+    onCardClick: () -> Unit,
     onRequestToggle: () -> Unit,
     onMessageClick: () -> Unit
 ) {
@@ -661,6 +777,8 @@ private fun CompanionCardItem(
             .fillMaxWidth()
             .clip(RoundedCornerShape(18.dp))
             .background(VryvCard)
+            .border(1.dp, VryvLine, RoundedCornerShape(18.dp))
+            .clickable { onCardClick() }
             .padding(14.dp)
     ) {
         Row(
@@ -704,37 +822,20 @@ private fun CompanionCardItem(
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
                 )
-                Spacer(modifier = Modifier.height(4.dp))
+                Spacer(modifier = Modifier.height(5.dp))
                 Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                     companion.sharedTags.take(3).forEach { tag ->
-                        Box(
-                            modifier = Modifier
-                                .clip(RoundedCornerShape(6.dp))
-                                .background(VryvCardElevated)
-                                .padding(horizontal = 6.dp, vertical = 2.dp)
-                        ) {
-                            Text(text = tag, color = VryvLime, fontSize = 10.5.sp)
-                        }
+                        VryvTag(text = tag, style = VryvTagStyle.Lime)
                     }
                 }
             }
 
             Spacer(modifier = Modifier.width(8.dp))
 
-            IconButton(
-                onClick = onMessageClick,
-                modifier = Modifier
-                    .size(36.dp)
-                    .clip(CircleShape)
-                    .background(VryvCardElevated)
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Chat,
-                    contentDescription = "Написать",
-                    tint = VryvTextPrimary,
-                    modifier = Modifier.size(18.dp)
-                )
-            }
+            VryvIconButton(
+                icon = VryvIcons.Msg,
+                onClick = onMessageClick
+            )
         }
     }
 }

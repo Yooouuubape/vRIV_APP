@@ -1,6 +1,8 @@
 package com.example.ui.screens.profile
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -18,22 +20,8 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.Campaign
-import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.DoneAll
-import androidx.compose.material.icons.filled.Group
-import androidx.compose.material.icons.filled.Mail
-import androidx.compose.material.icons.filled.Notifications
-import androidx.compose.material.icons.filled.PersonAdd
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
-import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -44,22 +32,31 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.R
 import com.example.data.NotificationItem
 import com.example.data.VryvRepository
+import com.example.ui.components.VryvButton
+import com.example.ui.components.VryvButtonStyle
+import com.example.ui.components.VryvFloatingBottomSheet
+import com.example.ui.components.VryvIcons
+import com.example.ui.components.VryvSubScreenHeader
 import com.example.ui.theme.VryvBg
 import com.example.ui.theme.VryvCard
 import com.example.ui.theme.VryvCardElevated
 import com.example.ui.theme.VryvLime
+import com.example.ui.theme.VryvLine
 import com.example.ui.theme.VryvPink
 import com.example.ui.theme.VryvTextMuted
 import com.example.ui.theme.VryvTextPrimary
 import com.example.ui.theme.VryvTextSecondary
+import com.example.ui.theme.VryvWarning
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun NotificationsCenterScreen(
     repository: VryvRepository,
@@ -75,44 +72,29 @@ fun NotificationsCenterScreen(
             .fillMaxSize()
             .background(VryvBg)
     ) {
-        // Top Header
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 8.dp, vertical = 8.dp),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                IconButton(onClick = onBackClick) {
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                        contentDescription = "Назад",
-                        tint = VryvTextPrimary
-                    )
-                }
-                Text(
-                    text = "Уведомления",
-                    color = VryvTextPrimary,
-                    fontSize = 20.sp,
-                    fontWeight = FontWeight.Bold,
-                    modifier = Modifier.padding(start = 8.dp)
-                )
-            }
-
-            if (notifications.any { !it.isRead }) {
-                IconButton(
-                    onClick = { repository.markAllNotificationsRead() },
-                    modifier = Modifier.testTag("mark_all_read_button")
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.DoneAll,
-                        contentDescription = "Прочитать все",
-                        tint = VryvPink
-                    )
+        // Top Header matching notifCenter.png
+        VryvSubScreenHeader(
+            title = "Уведомления",
+            onBackClick = onBackClick,
+            rightContent = {
+                if (notifications.any { !it.isRead }) {
+                    Box(
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(10.dp))
+                            .clickable { repository.markAllNotificationsRead() }
+                            .padding(horizontal = 8.dp, vertical = 6.dp)
+                            .testTag("mark_all_read_button")
+                    ) {
+                        Text(
+                            text = "Прочитать все",
+                            color = VryvPink,
+                            fontSize = 13.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
                 }
             }
-        }
+        )
 
         if (notifications.isEmpty()) {
             Box(
@@ -123,7 +105,7 @@ fun NotificationsCenterScreen(
             ) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Icon(
-                        imageVector = Icons.Default.Notifications,
+                        imageVector = VryvIcons.Bell,
                         contentDescription = null,
                         tint = VryvTextMuted,
                         modifier = Modifier.size(54.dp)
@@ -140,9 +122,19 @@ fun NotificationsCenterScreen(
         } else {
             LazyColumn(
                 modifier = Modifier.fillMaxSize(),
-                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 10.dp),
+                contentPadding = PaddingValues(horizontal = 20.dp, vertical = 10.dp),
                 verticalArrangement = Arrangement.spacedBy(10.dp)
             ) {
+                item {
+                    Text(
+                        text = "СЕГОДНЯ",
+                        color = VryvTextSecondary,
+                        fontSize = 11.sp,
+                        fontWeight = FontWeight.Bold,
+                        letterSpacing = 0.8.sp,
+                        modifier = Modifier.padding(start = 4.dp, bottom = 2.dp)
+                    )
+                }
                 items(notifications) { notif ->
                     NotificationRowItem(
                         item = notif,
@@ -159,84 +151,105 @@ fun NotificationsCenterScreen(
         }
     }
 
-    // Sheet for Incoming Invitation (invIn)
+    // Sheet for Incoming Invitation (invIn.png)
     if (selectedNotifForInvite != null) {
         val notif = selectedNotifForInvite!!
-        ModalBottomSheet(
-            onDismissRequest = { selectedNotifForInvite = null },
-            sheetState = rememberModalBottomSheetState(),
-            containerColor = VryvCard
+        VryvFloatingBottomSheet(
+            onDismiss = { selectedNotifForInvite = null }
         ) {
             Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(22.dp),
+                modifier = Modifier.fillMaxWidth(),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Text(
-                    text = "Приглашение на мероприятие",
-                    color = VryvTextPrimary,
-                    fontSize = 19.sp,
-                    fontWeight = FontWeight.Bold
-                )
-                Spacer(modifier = Modifier.height(8.dp))
-                Text(
-                    text = notif.title,
-                    color = VryvPink,
-                    fontSize = 15.sp,
-                    fontWeight = FontWeight.SemiBold
-                )
-                Text(
-                    text = notif.subtitle,
-                    color = VryvTextSecondary,
-                    fontSize = 13.sp
-                )
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Image(
+                        painter = painterResource(id = R.drawable.av2),
+                        contentDescription = null,
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier
+                            .size(44.dp)
+                            .clip(CircleShape)
+                    )
+                    Spacer(modifier = Modifier.width(12.dp))
+                    Column {
+                        Text(
+                            text = "Илья Кравцов приглашает вас",
+                            color = VryvTextPrimary,
+                            fontSize = 15.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                        Text(
+                            text = "«Го сегодня на RAVE в Modul!»",
+                            color = VryvTextSecondary,
+                            fontSize = 13.sp
+                        )
+                    }
+                }
 
-                Spacer(modifier = Modifier.height(24.dp))
+                Spacer(modifier = Modifier.height(14.dp))
+
+                // Event preview card inside invIn sheet
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(16.dp))
+                        .background(VryvCardElevated)
+                        .border(1.dp, VryvLine, RoundedCornerShape(16.dp))
+                        .padding(10.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Image(
+                        painter = painterResource(id = R.drawable.techno),
+                        contentDescription = null,
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier
+                            .size(56.dp)
+                            .clip(RoundedCornerShape(12.dp))
+                    )
+                    Spacer(modifier = Modifier.width(12.dp))
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            text = notif.title,
+                            color = VryvTextPrimary,
+                            fontSize = 15.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                        Spacer(modifier = Modifier.height(2.dp))
+                        Text(
+                            text = notif.subtitle,
+                            color = VryvTextSecondary,
+                            fontSize = 12.sp
+                        )
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(18.dp))
 
                 Row(
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                    horizontalArrangement = Arrangement.spacedBy(10.dp)
                 ) {
-                    Box(
-                        modifier = Modifier
-                            .weight(1f)
-                            .clip(RoundedCornerShape(12.dp))
-                            .background(VryvCardElevated)
-                            .clickable {
-                                repository.respondToInvite(notif.id, accept = false)
-                                selectedNotifForInvite = null
-                            }
-                            .padding(vertical = 12.dp),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(
-                            text = "Не смогу",
-                            color = VryvTextSecondary,
-                            fontSize = 14.sp,
-                            fontWeight = FontWeight.SemiBold
-                        )
-                    }
-
-                    Box(
-                        modifier = Modifier
-                            .weight(1f)
-                            .clip(RoundedCornerShape(12.dp))
-                            .background(VryvPink)
-                            .clickable {
-                                repository.respondToInvite(notif.id, accept = true)
-                                selectedNotifForInvite = null
-                            }
-                            .padding(vertical = 12.dp),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(
-                            text = "Пойду!",
-                            color = Color.White,
-                            fontSize = 14.sp,
-                            fontWeight = FontWeight.Bold
-                        )
-                    }
+                    VryvButton(
+                        text = "Не смогу",
+                        style = VryvButtonStyle.SecondaryDark,
+                        modifier = Modifier.weight(1f),
+                        onClick = {
+                            repository.respondToInvite(notif.id, accept = false)
+                            selectedNotifForInvite = null
+                        }
+                    )
+                    VryvButton(
+                        text = "Пойду!",
+                        style = VryvButtonStyle.PrimaryPink,
+                        modifier = Modifier.weight(1f),
+                        onClick = {
+                            repository.respondToInvite(notif.id, accept = true)
+                            selectedNotifForInvite = null
+                        }
+                    )
                 }
             }
         }
@@ -249,18 +262,23 @@ fun NotificationRowItem(
     onClick: () -> Unit
 ) {
     val (icon, tint) = when (item.type) {
-        "invite" -> Icons.Default.Mail to VryvPink
-        "message" -> Icons.Default.Mail to VryvLime
-        "group" -> Icons.Default.Group to VryvPink
-        "event_change" -> Icons.Default.Campaign to Color(0xFFFF9100)
-        else -> Icons.Default.PersonAdd to VryvLime
+        "invite" -> VryvIcons.Flame to VryvPink
+        "message" -> VryvIcons.Msg to VryvLime
+        "group" -> VryvIcons.Users to VryvPink
+        "event_change" -> VryvIcons.Clock to VryvWarning
+        else -> VryvIcons.Check to VryvLime
     }
 
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(16.dp))
+            .clip(RoundedCornerShape(18.dp))
             .background(if (item.isRead) VryvCard else VryvCardElevated)
+            .border(
+                width = 1.dp,
+                color = if (item.isRead) VryvLine else VryvPink.copy(alpha = 0.35f),
+                shape = RoundedCornerShape(18.dp)
+            )
             .clickable { onClick() }
             .padding(14.dp),
         verticalAlignment = Alignment.CenterVertically
@@ -268,7 +286,7 @@ fun NotificationRowItem(
         Box(
             modifier = Modifier
                 .size(42.dp)
-                .clip(CircleShape)
+                .clip(RoundedCornerShape(13.dp))
                 .background(tint.copy(alpha = 0.15f)),
             contentAlignment = Alignment.Center
         ) {
@@ -278,9 +296,26 @@ fun NotificationRowItem(
         Spacer(modifier = Modifier.width(12.dp))
 
         Column(modifier = Modifier.weight(1f)) {
-            Text(text = item.title, color = VryvTextPrimary, fontSize = 14.5.sp, fontWeight = FontWeight.Bold)
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(
+                    text = item.title,
+                    color = VryvTextPrimary,
+                    fontSize = 14.5.sp,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.weight(1f, fill = false)
+                )
+                if (!item.isRead) {
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Box(
+                        modifier = Modifier
+                            .size(7.dp)
+                            .clip(CircleShape)
+                            .background(VryvPink)
+                    )
+                }
+            }
             Spacer(modifier = Modifier.height(2.dp))
-            Text(text = item.subtitle, color = VryvTextSecondary, fontSize = 12.sp)
+            Text(text = item.subtitle, color = VryvTextSecondary, fontSize = 12.5.sp)
         }
 
         Spacer(modifier = Modifier.width(8.dp))

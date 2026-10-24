@@ -2,6 +2,7 @@ package com.example.ui.screens.company
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -20,22 +21,12 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.automirrored.filled.Send
-import androidx.compose.material.icons.filled.Flag
-import androidx.compose.material.icons.filled.Group
-import androidx.compose.material.icons.filled.Lock
-import androidx.compose.material.icons.filled.MoreVert
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
-import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -46,18 +37,26 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.R
-import com.example.data.ChatMessage
 import com.example.data.VryvRepository
+import com.example.ui.components.VryvButton
+import com.example.ui.components.VryvButtonStyle
+import com.example.ui.components.VryvFloatingBottomSheet
+import com.example.ui.components.VryvIconButton
+import com.example.ui.components.VryvIcons
+import com.example.ui.components.VryvStatusPill
+import com.example.ui.components.VryvStatusStyle
 import com.example.ui.theme.VryvBg
 import com.example.ui.theme.VryvCard
 import com.example.ui.theme.VryvCardElevated
-import com.example.ui.theme.VryvInputBg
+import com.example.ui.theme.VryvDanger
 import com.example.ui.theme.VryvLime
 import com.example.ui.theme.VryvLine
 import com.example.ui.theme.VryvPink
@@ -65,7 +64,6 @@ import com.example.ui.theme.VryvTextMuted
 import com.example.ui.theme.VryvTextPrimary
 import com.example.ui.theme.VryvTextSecondary
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun GroupChatScreen(
     groupId: String,
@@ -94,15 +92,11 @@ fun GroupChatScreen(
         ) {
             Text(text = "Компания не найдена", color = VryvTextPrimary, fontSize = 18.sp, fontWeight = FontWeight.Bold)
             Spacer(modifier = Modifier.height(12.dp))
-            Box(
-                modifier = Modifier
-                    .clip(RoundedCornerShape(12.dp))
-                    .background(VryvPink)
-                    .clickable { onBackClick() }
-                    .padding(horizontal = 20.dp, vertical = 10.dp)
-            ) {
-                Text(text = "Назад к компаниям", color = Color.White, fontWeight = FontWeight.Bold)
-            }
+            VryvButton(
+                text = "Назад к компаниям",
+                style = VryvButtonStyle.PrimaryPink,
+                onClick = onBackClick
+            )
         }
         return
     }
@@ -110,6 +104,7 @@ fun GroupChatScreen(
     val isMember = group.memberIds.contains(currentUser.id) || group.isUserJoined || group.creatorId == currentUser.id
 
     if (!group.isOpen && !isMember) {
+        // compPage.png / compSent.png state for non-member of closed group
         Column(
             modifier = modifier
                 .fillMaxSize()
@@ -118,38 +113,42 @@ fun GroupChatScreen(
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Icon(Icons.Default.Lock, contentDescription = null, tint = VryvPink, modifier = Modifier.size(54.dp))
+            Box(
+                modifier = Modifier
+                    .size(64.dp)
+                    .clip(CircleShape)
+                    .background(VryvPink.copy(alpha = 0.14f)),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(VryvIcons.Lock, contentDescription = null, tint = VryvPink, modifier = Modifier.size(28.dp))
+            }
             Spacer(modifier = Modifier.height(16.dp))
-            Text(text = "Это закрытая компания", color = VryvTextPrimary, fontSize = 20.sp, fontWeight = FontWeight.Bold)
+            Text(
+                text = if (group.isUserPending) "Заявка отправлена" else "Это закрытая компания",
+                color = VryvTextPrimary,
+                fontSize = 22.sp,
+                fontWeight = FontWeight.Bold
+            )
             Spacer(modifier = Modifier.height(6.dp))
             Text(
                 text = "Доступ к чату предоставляется только после одобрения заявки создателем (${group.creatorName}).",
                 color = VryvTextSecondary,
-                fontSize = 13.5.sp,
-                textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                fontSize = 14.sp,
+                textAlign = TextAlign.Center
             )
-            Spacer(modifier = Modifier.height(20.dp))
-            Box(
-                modifier = Modifier
-                    .clip(RoundedCornerShape(12.dp))
-                    .background(if (group.isUserPending) VryvCardElevated else VryvPink)
-                    .clickable {
-                        if (!group.isUserPending) repository.joinGroup(group.id)
-                    }
-                    .padding(horizontal = 24.dp, vertical = 12.dp)
-            ) {
-                Text(
-                    text = if (group.isUserPending) "Заявка отправлена" else "Подать заявку на вступление",
-                    color = Color.White,
-                    fontWeight = FontWeight.Bold
-                )
-            }
+            Spacer(modifier = Modifier.height(22.dp))
+            VryvButton(
+                text = if (group.isUserPending) "Ожидает подтверждения" else "Подать заявку на вступление",
+                style = if (group.isUserPending) VryvButtonStyle.SecondaryDark else VryvButtonStyle.PrimaryPink,
+                onClick = {
+                    if (!group.isUserPending) repository.joinGroup(group.id)
+                }
+            )
             Spacer(modifier = Modifier.height(10.dp))
-            Text(
+            VryvButton(
                 text = "Назад",
-                color = VryvTextSecondary,
-                fontSize = 13.sp,
-                modifier = Modifier.clickable { onBackClick() }.padding(8.dp)
+                style = VryvButtonStyle.Ghost,
+                onClick = onBackClick
             )
         }
         return
@@ -160,37 +159,45 @@ fun GroupChatScreen(
             .fillMaxSize()
             .background(VryvBg)
     ) {
-        // Chat Header
+        // Chat Header matching compChat.png
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .background(VryvCard)
-                .padding(horizontal = 8.dp, vertical = 8.dp),
+                .background(VryvBg)
+                .padding(horizontal = 16.dp, vertical = 10.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             IconButton(
                 onClick = onBackClick,
-                modifier = Modifier.testTag("chat_back_button")
+                modifier = Modifier
+                    .size(40.dp)
+                    .clip(CircleShape)
+                    .background(VryvCardElevated)
+                    .border(1.dp, VryvLine, CircleShape)
+                    .testTag("chat_back_button")
             ) {
                 Icon(
-                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                    imageVector = VryvIcons.Back,
                     contentDescription = "Назад",
-                    tint = VryvTextPrimary
+                    tint = VryvTextPrimary,
+                    modifier = Modifier.size(18.dp)
                 )
             }
+
+            Spacer(modifier = Modifier.width(10.dp))
 
             Box(
                 modifier = Modifier
                     .size(40.dp)
                     .clip(CircleShape)
-                    .background(if (group.isOpen) Color(0x33C7FF28) else Color(0x33FF1D8E)),
+                    .background(if (group.isOpen) VryvLime.copy(alpha = 0.16f) else VryvPink.copy(alpha = 0.16f)),
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
-                    imageVector = Icons.Default.Group,
+                    imageVector = VryvIcons.Users,
                     contentDescription = null,
                     tint = if (group.isOpen) VryvLime else VryvPink,
-                    modifier = Modifier.size(22.dp)
+                    modifier = Modifier.size(20.dp)
                 )
             }
 
@@ -216,13 +223,37 @@ fun GroupChatScreen(
                 )
             }
 
-            IconButton(onClick = { showMembersSheet = true }) {
-                Icon(
-                    imageVector = Icons.Default.MoreVert,
-                    contentDescription = "Участники",
-                    tint = VryvTextSecondary
-                )
-            }
+            VryvIconButton(
+                icon = VryvIcons.Users,
+                onClick = { showMembersSheet = true }
+            )
+        }
+
+        // Pinned Meeting Info Banner (compChat.png)
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp, vertical = 4.dp)
+                .clip(RoundedCornerShape(14.dp))
+                .background(VryvCard)
+                .border(1.dp, VryvLine, RoundedCornerShape(14.dp))
+                .padding(horizontal = 14.dp, vertical = 10.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Icon(
+                imageVector = VryvIcons.Pin,
+                contentDescription = null,
+                tint = VryvLime,
+                modifier = Modifier.size(16.dp)
+            )
+            Spacer(modifier = Modifier.width(8.dp))
+            Text(
+                text = "Сбор: ${group.meetingPlace} · в ${group.meetingTime}",
+                color = VryvTextPrimary,
+                fontSize = 12.5.sp,
+                fontWeight = FontWeight.SemiBold,
+                modifier = Modifier.weight(1f)
+            )
         }
 
         // Messages list
@@ -260,13 +291,23 @@ fun GroupChatScreen(
                             modifier = Modifier
                                 .clip(
                                     RoundedCornerShape(
-                                        topStart = 16.dp,
-                                        topEnd = 16.dp,
-                                        bottomStart = if (isMyMsg) 16.dp else 4.dp,
-                                        bottomEnd = if (isMyMsg) 4.dp else 16.dp
+                                        topStart = 18.dp,
+                                        topEnd = 18.dp,
+                                        bottomStart = if (isMyMsg) 18.dp else 4.dp,
+                                        bottomEnd = if (isMyMsg) 4.dp else 18.dp
                                     )
                                 )
                                 .background(if (isMyMsg) VryvPink else VryvCard)
+                                .border(
+                                    width = if (isMyMsg) 0.dp else 1.dp,
+                                    color = if (isMyMsg) Color.Transparent else VryvLine,
+                                    shape = RoundedCornerShape(
+                                        topStart = 18.dp,
+                                        topEnd = 18.dp,
+                                        bottomStart = if (isMyMsg) 18.dp else 4.dp,
+                                        bottomEnd = if (isMyMsg) 4.dp else 18.dp
+                                    )
+                                )
                                 .padding(horizontal = 14.dp, vertical = 10.dp)
                         ) {
                             Text(
@@ -289,44 +330,46 @@ fun GroupChatScreen(
 
         // Quick reply pills
         LazyRow(
-            contentPadding = PaddingValues(horizontal = 12.dp, vertical = 6.dp),
+            contentPadding = PaddingValues(horizontal = 16.dp, vertical = 6.dp),
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             items(quickReplies) { reply ->
                 Box(
                     modifier = Modifier
-                        .clip(RoundedCornerShape(12.dp))
+                        .clip(RoundedCornerShape(999.dp))
                         .background(VryvCardElevated)
+                        .border(1.dp, VryvLine, RoundedCornerShape(999.dp))
                         .clickable { repository.sendGroupMessage(group.id, reply) }
                         .padding(horizontal = 12.dp, vertical = 6.dp)
                 ) {
                     Text(
                         text = reply,
                         color = VryvTextPrimary,
-                        fontSize = 12.sp
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.Medium
                     )
                 }
             }
         }
 
-        // Input Bar
+        // Input Bar matching compChat.png
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .background(VryvCard)
-                .padding(horizontal = 12.dp, vertical = 8.dp),
+                .background(VryvBg)
+                .padding(horizontal = 16.dp, vertical = 10.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             OutlinedTextField(
                 value = textInput,
                 onValueChange = { textInput = it },
                 placeholder = { Text("Сообщение в компанию...", color = VryvTextMuted, fontSize = 14.sp) },
-                shape = RoundedCornerShape(20.dp),
+                shape = RoundedCornerShape(999.dp),
                 colors = OutlinedTextFieldDefaults.colors(
-                    focusedContainerColor = VryvInputBg,
-                    unfocusedContainerColor = VryvInputBg,
-                    focusedBorderColor = Color.Transparent,
-                    unfocusedBorderColor = Color.Transparent,
+                    focusedContainerColor = VryvCardElevated,
+                    unfocusedContainerColor = VryvCardElevated,
+                    focusedBorderColor = VryvPink,
+                    unfocusedBorderColor = VryvLine,
                     focusedTextColor = VryvTextPrimary,
                     unfocusedTextColor = VryvTextPrimary
                 ),
@@ -345,13 +388,13 @@ fun GroupChatScreen(
                     }
                 },
                 modifier = Modifier
-                    .size(44.dp)
+                    .size(46.dp)
                     .clip(CircleShape)
                     .background(VryvPink)
                     .testTag("chat_send_button")
             ) {
                 Icon(
-                    imageVector = Icons.AutoMirrored.Filled.Send,
+                    imageVector = VryvIcons.Send,
                     contentDescription = "Отправить",
                     tint = Color.White,
                     modifier = Modifier.size(18.dp)
@@ -360,22 +403,16 @@ fun GroupChatScreen(
         }
     }
 
-    // Participants Bottom Sheet
+    // Participants Bottom Sheet matching compMembers.png
     if (showMembersSheet) {
-        ModalBottomSheet(
-            onDismissRequest = { showMembersSheet = false },
-            sheetState = rememberModalBottomSheetState(),
-            containerColor = VryvCard
+        VryvFloatingBottomSheet(
+            onDismiss = { showMembersSheet = false }
         ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(20.dp)
-            ) {
+            Column(modifier = Modifier.fillMaxWidth()) {
                 Text(
                     text = "Состав компании · ${group.currentMembersCount} из ${group.maxMembers}",
                     color = VryvTextPrimary,
-                    fontSize = 18.sp,
+                    fontSize = 19.sp,
                     fontWeight = FontWeight.Bold
                 )
                 Spacer(modifier = Modifier.height(14.dp))
@@ -397,8 +434,9 @@ fun GroupChatScreen(
                         Image(
                             painter = painterResource(id = avatar),
                             contentDescription = name,
+                            contentScale = ContentScale.Crop,
                             modifier = Modifier
-                                .size(40.dp)
+                                .size(42.dp)
                                 .clip(CircleShape)
                         )
                         Spacer(modifier = Modifier.width(12.dp))
@@ -406,10 +444,14 @@ fun GroupChatScreen(
                             Text(text = name, color = VryvTextPrimary, fontSize = 15.sp, fontWeight = FontWeight.SemiBold)
                             Text(text = role, color = if (role.contains("Создатель")) VryvLime else VryvTextSecondary, fontSize = 12.sp)
                         }
+                        if (role.contains("Создатель")) {
+                            VryvStatusPill("Организатор", VryvStatusStyle.Lime)
+                        }
                     }
+                    HorizontalDivider(color = VryvLine, thickness = 0.5.dp)
                 }
 
-                Spacer(modifier = Modifier.height(14.dp))
+                Spacer(modifier = Modifier.height(16.dp))
 
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -418,37 +460,37 @@ fun GroupChatScreen(
                     Box(
                         modifier = Modifier
                             .weight(1f)
-                            .clip(RoundedCornerShape(12.dp))
-                            .background(Color(0x22FF1D8E))
+                            .clip(RoundedCornerShape(14.dp))
+                            .background(VryvDanger.copy(alpha = 0.14f))
+                            .border(1.dp, VryvDanger.copy(alpha = 0.35f), RoundedCornerShape(14.dp))
                             .clickable {
                                 repository.leaveGroup(group.id)
                                 showMembersSheet = false
                                 onBackClick()
                             }
-                            .padding(vertical = 12.dp)
+                            .padding(vertical = 13.dp)
                             .testTag("group_leave_btn"),
                         contentAlignment = Alignment.Center
                     ) {
-                        Text(text = "Выйти из компании", color = VryvPink, fontSize = 13.sp, fontWeight = FontWeight.Bold)
+                        Text(text = "Выйти из компании", color = VryvDanger, fontSize = 13.sp, fontWeight = FontWeight.Bold)
                     }
 
                     Box(
                         modifier = Modifier
                             .weight(1f)
-                            .clip(RoundedCornerShape(12.dp))
+                            .clip(RoundedCornerShape(14.dp))
                             .background(VryvCardElevated)
+                            .border(1.dp, VryvLine, RoundedCornerShape(14.dp))
                             .clickable {
                                 showMembersSheet = false
                                 onReportClick("Группа", group.title)
                             }
-                            .padding(vertical = 12.dp),
+                            .padding(vertical = 13.dp),
                         contentAlignment = Alignment.Center
                     ) {
-                        Text(text = "Пожаловаться", color = VryvTextSecondary, fontSize = 13.sp)
+                        Text(text = "Пожаловаться", color = VryvTextSecondary, fontSize = 13.sp, fontWeight = FontWeight.SemiBold)
                     }
                 }
-
-                Spacer(modifier = Modifier.height(20.dp))
             }
         }
     }

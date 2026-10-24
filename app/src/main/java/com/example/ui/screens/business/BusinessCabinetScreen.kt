@@ -2,6 +2,7 @@ package com.example.ui.screens.business
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -18,14 +19,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.CheckCircle
-import androidx.compose.material.icons.filled.ChevronRight
-import androidx.compose.material.icons.filled.ExpandMore
-import androidx.compose.material.icons.filled.Person
-import androidx.compose.material.icons.filled.TrendingUp
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -41,9 +34,11 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.R
 import com.example.data.EventStatus
 import com.example.data.VryvRepository
+import com.example.ui.components.VryvIcons
+import com.example.ui.components.VryvStatusPill
+import com.example.ui.components.VryvStatusStyle
 import com.example.ui.theme.VryvBg
 import com.example.ui.theme.VryvCard
 import com.example.ui.theme.VryvCardElevated
@@ -76,34 +71,35 @@ fun BusinessCabinetScreen(
             .fillMaxSize()
             .background(VryvBg)
     ) {
-        // Business Header
+        // Business Header matching d1.png
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 10.dp),
+                .padding(horizontal = 20.dp, vertical = 12.dp),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier
-                    .clip(RoundedCornerShape(12.dp))
+                    .clip(RoundedCornerShape(14.dp))
                     .clickable { onSwitchToPersonalClick() }
                     .padding(vertical = 4.dp, horizontal = 6.dp)
                     .testTag("biz_header_role_switch")
             ) {
                 Box(
                     modifier = Modifier
-                        .size(34.dp)
-                        .clip(CircleShape)
-                        .background(VryvPink),
+                        .size(40.dp)
+                        .clip(RoundedCornerShape(12.dp))
+                        .background(VryvLime.copy(alpha = 0.18f))
+                        .border(1.dp, VryvLime.copy(alpha = 0.45f), RoundedCornerShape(12.dp)),
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
                         text = "13",
-                        color = Color.White,
+                        color = VryvLime,
                         fontSize = 15.sp,
-                        fontWeight = FontWeight.Bold
+                        fontWeight = FontWeight.ExtraBold
                     )
                 }
 
@@ -114,15 +110,15 @@ fun BusinessCabinetScreen(
                         Text(
                             text = venue.name,
                             color = VryvTextPrimary,
-                            fontSize = 17.sp,
+                            fontSize = 18.sp,
                             fontWeight = FontWeight.Bold
                         )
                         Spacer(modifier = Modifier.width(4.dp))
                         Icon(
-                            imageVector = Icons.Default.ExpandMore,
+                            imageVector = VryvIcons.ChevronDown,
                             contentDescription = "Сменить профиль",
                             tint = VryvTextSecondary,
-                            modifier = Modifier.size(18.dp)
+                            modifier = Modifier.size(16.dp)
                         )
                     }
                     Row(verticalAlignment = Alignment.CenterVertically) {
@@ -132,11 +128,11 @@ fun BusinessCabinetScreen(
                                 .clip(CircleShape)
                                 .background(VryvLime)
                         )
-                        Spacer(modifier = Modifier.width(4.dp))
+                        Spacer(modifier = Modifier.width(5.dp))
                         Text(
                             text = "Подтверждено · ${venue.category}",
                             color = VryvTextSecondary,
-                            fontSize = 11.sp
+                            fontSize = 11.5.sp
                         )
                     }
                 }
@@ -144,35 +140,42 @@ fun BusinessCabinetScreen(
 
             Box(
                 modifier = Modifier
-                    .clip(RoundedCornerShape(10.dp))
-                    .background(VryvCard)
+                    .clip(RoundedCornerShape(999.dp))
+                    .background(VryvCardElevated)
+                    .border(1.dp, VryvLine, RoundedCornerShape(999.dp))
                     .clickable { onSwitchToPersonalClick() }
-                    .padding(horizontal = 10.dp, vertical = 6.dp)
+                    .padding(horizontal = 12.dp, vertical = 7.dp)
             ) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Icon(
-                        imageVector = Icons.Default.Person,
+                        imageVector = VryvIcons.User,
                         contentDescription = null,
-                        tint = VryvTextSecondary,
+                        tint = VryvTextPrimary,
                         modifier = Modifier.size(14.dp)
                     )
-                    Spacer(modifier = Modifier.width(4.dp))
-                    Text(text = "Личный", color = VryvTextSecondary, fontSize = 11.sp)
+                    Spacer(modifier = Modifier.width(5.dp))
+                    Text(
+                        text = "Личный",
+                        color = VryvTextPrimary,
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.SemiBold
+                    )
                 }
             }
         }
 
         LazyColumn(
             modifier = Modifier.fillMaxSize(),
-            contentPadding = PaddingValues(horizontal = 16.dp, vertical = 10.dp)
+            contentPadding = PaddingValues(horizontal = 20.dp, vertical = 8.dp)
         ) {
-            // Period switcher (Сегодня / 7 дней / 30 дней)
+            // Period switcher (Сегодня / 7 дней / 30 дней) matching d1.png
             item {
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .clip(RoundedCornerShape(12.dp))
+                        .clip(RoundedCornerShape(14.dp))
                         .background(VryvCard)
+                        .border(1.dp, VryvLine, RoundedCornerShape(14.dp))
                         .padding(4.dp)
                 ) {
                     listOf("Сегодня", "7 дней", "30 дней").forEach { p ->
@@ -183,14 +186,14 @@ fun BusinessCabinetScreen(
                                 .clip(RoundedCornerShape(10.dp))
                                 .background(if (isSelected) VryvLime else Color.Transparent)
                                 .clickable { repository.setMetricsPeriod(p) }
-                                .padding(vertical = 7.dp),
+                                .padding(vertical = 8.dp),
                             contentAlignment = Alignment.Center
                         ) {
                             Text(
                                 text = p,
-                                color = if (isSelected) Color.Black else VryvTextSecondary,
-                                fontSize = 12.sp,
-                                fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium
+                                color = if (isSelected) Color(0xFF0B0B0F) else VryvTextSecondary,
+                                fontSize = 13.sp,
+                                fontWeight = if (isSelected) FontWeight.Bold else FontWeight.SemiBold
                             )
                         }
                     }
@@ -198,7 +201,7 @@ fun BusinessCabinetScreen(
                 Spacer(modifier = Modifier.height(14.dp))
             }
 
-            // 6 Metric Cards
+            // 6 Metric Cards (2x3 Grid) matching d1.png
             item {
                 Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                     Row(
@@ -266,21 +269,30 @@ fun BusinessCabinetScreen(
                 Spacer(modifier = Modifier.height(18.dp))
             }
 
-            // Nearest Event Card
+            // Nearest Event Card matching d1.png
             item {
-                Text(
-                    text = "Ближайшее мероприятие",
-                    color = VryvTextPrimary,
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.Bold,
-                    modifier = Modifier.padding(bottom = 8.dp)
-                )
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = 8.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = "Ближайшее мероприятие",
+                        color = VryvTextPrimary,
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                    VryvStatusPill("Опубликовано", VryvStatusStyle.Lime)
+                }
 
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .clip(RoundedCornerShape(16.dp))
+                        .clip(RoundedCornerShape(18.dp))
                         .background(VryvCard)
+                        .border(1.dp, VryvLine, RoundedCornerShape(18.dp))
                         .clickable { onEventClick(nearestEvent.id) }
                         .padding(14.dp),
                     verticalAlignment = Alignment.CenterVertically
@@ -290,8 +302,8 @@ fun BusinessCabinetScreen(
                         contentDescription = nearestEvent.title,
                         contentScale = ContentScale.Crop,
                         modifier = Modifier
-                            .size(60.dp)
-                            .clip(RoundedCornerShape(12.dp))
+                            .size(64.dp)
+                            .clip(RoundedCornerShape(14.dp))
                     )
 
                     Spacer(modifier = Modifier.width(14.dp))
@@ -300,62 +312,63 @@ fun BusinessCabinetScreen(
                         Text(
                             text = nearestEvent.title,
                             color = VryvTextPrimary,
-                            fontSize = 15.sp,
+                            fontSize = 15.5.sp,
                             fontWeight = FontWeight.Bold
                         )
                         Spacer(modifier = Modifier.height(2.dp))
                         Text(
                             text = "${nearestEvent.dateDisplay} · ${nearestEvent.timeDisplay}",
                             color = VryvLime,
-                            fontSize = 12.sp,
+                            fontSize = 12.5.sp,
                             fontWeight = FontWeight.SemiBold
                         )
                         Text(
-                            text = "${nearestEvent.goingCount} планируют пойти",
+                            text = "${nearestEvent.goingCount} планируют пойти · ${nearestEvent.viewsCount} просм.",
                             color = VryvTextSecondary,
                             fontSize = 12.sp
                         )
                     }
 
                     Icon(
-                        imageVector = Icons.Default.ChevronRight,
+                        imageVector = VryvIcons.ChevronRight,
                         contentDescription = null,
-                        tint = VryvTextMuted
+                        tint = VryvTextMuted,
+                        modifier = Modifier.size(18.dp)
                     )
                 }
 
                 Spacer(modifier = Modifier.height(18.dp))
             }
 
-            // Quick Action: Add Event
+            // Quick Action: Add Event (preserving testTag("biz_create_event_btn"))
             item {
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .clip(RoundedCornerShape(14.dp))
+                        .height(52.dp)
+                        .clip(RoundedCornerShape(16.dp))
                         .background(VryvLime)
                         .clickable { onCreateEventClick() }
-                        .padding(vertical = 14.dp)
                         .testTag("biz_create_event_btn"),
                     contentAlignment = Alignment.Center
                 ) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Icon(
-                            imageVector = Icons.Default.Add,
+                            imageVector = VryvIcons.Plus,
                             contentDescription = null,
-                            tint = Color.Black,
-                            modifier = Modifier.size(20.dp)
+                            tint = Color(0xFF0B0B0F),
+                            modifier = Modifier.size(18.dp)
                         )
                         Spacer(modifier = Modifier.width(8.dp))
                         Text(
                             text = "Создать мероприятие",
-                            color = Color.Black,
+                            color = Color(0xFF0B0B0F),
                             fontSize = 15.sp,
                             fontWeight = FontWeight.Bold
                         )
                     }
                 }
-                Spacer(modifier = Modifier.height(80.dp))
+                Spacer(modifier = Modifier.height(100.dp))
             }
         }
     }
@@ -370,20 +383,34 @@ fun MetricCard(
 ) {
     Box(
         modifier = modifier
-            .clip(RoundedCornerShape(14.dp))
+            .clip(RoundedCornerShape(18.dp))
             .background(VryvCard)
+            .border(1.dp, VryvLine, RoundedCornerShape(18.dp))
             .padding(14.dp)
     ) {
         Column {
-            Text(text = label, color = VryvTextSecondary, fontSize = 12.sp)
-            Spacer(modifier = Modifier.height(4.dp))
+            Text(text = label, color = VryvTextSecondary, fontSize = 12.sp, fontWeight = FontWeight.Medium)
+            Spacer(modifier = Modifier.height(6.dp))
             Row(
                 verticalAlignment = Alignment.Bottom,
                 horizontalArrangement = Arrangement.SpaceBetween,
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Text(text = value, color = VryvTextPrimary, fontSize = 20.sp, fontWeight = FontWeight.Bold)
-                Text(text = dynamic, color = VryvLime, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                Text(
+                    text = value,
+                    color = VryvTextPrimary,
+                    fontSize = 22.sp,
+                    fontWeight = FontWeight.ExtraBold,
+                    letterSpacing = (-0.5).sp
+                )
+                Box(
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(6.dp))
+                        .background(VryvLime.copy(alpha = 0.14f))
+                        .padding(horizontal = 6.dp, vertical = 2.dp)
+                ) {
+                    Text(text = dynamic, color = VryvLime, fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                }
             }
         }
     }

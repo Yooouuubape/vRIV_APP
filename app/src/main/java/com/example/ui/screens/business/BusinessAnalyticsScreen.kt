@@ -1,6 +1,7 @@
 package com.example.ui.screens.business
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -11,11 +12,9 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -31,7 +30,9 @@ import androidx.compose.ui.unit.sp
 import com.example.data.VryvRepository
 import com.example.ui.theme.VryvBg
 import com.example.ui.theme.VryvCard
+import com.example.ui.theme.VryvCardElevated
 import com.example.ui.theme.VryvLime
+import com.example.ui.theme.VryvLine
 import com.example.ui.theme.VryvPink
 import com.example.ui.theme.VryvTextMuted
 import com.example.ui.theme.VryvTextPrimary
@@ -65,13 +66,14 @@ fun BusinessAnalyticsScreen(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 14.dp)
+                .padding(horizontal = 20.dp, vertical = 14.dp)
         ) {
             Text(
                 text = "Аудитория и воронка",
                 color = VryvTextPrimary,
-                fontSize = 22.sp,
-                fontWeight = FontWeight.Bold
+                fontSize = 24.sp,
+                fontWeight = FontWeight.ExtraBold,
+                letterSpacing = (-0.5).sp
             )
             Text(
                 text = "Показатели площадки «${venue.name}»",
@@ -82,17 +84,18 @@ fun BusinessAnalyticsScreen(
 
         LazyColumn(
             modifier = Modifier.fillMaxSize(),
-            contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
+            contentPadding = PaddingValues(horizontal = 20.dp, vertical = 8.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            // Conversion Funnel
+            // Conversion Funnel matching d4.png
             item {
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .clip(RoundedCornerShape(18.dp))
+                        .clip(RoundedCornerShape(20.dp))
                         .background(VryvCard)
-                        .padding(16.dp)
+                        .border(1.dp, VryvLine, RoundedCornerShape(20.dp))
+                        .padding(18.dp)
                 ) {
                     Text(
                         text = "Воронка интереса событий площадки",
@@ -102,29 +105,77 @@ fun BusinessAnalyticsScreen(
                     )
                     Spacer(modifier = Modifier.height(14.dp))
 
-                    FunnelStep(label = "1. Просмотры в ленте", value = "$totalViews", percent = 1.0f, color = Color(0xFF6A6A76))
+                    FunnelStep(label = "1. Просмотры в ленте", value = "$totalViews", percent = 1.0f, color = Color(0xFF9696A3))
                     FunnelStep(label = "2. Сохранения в закладки", value = "$totalSaves", percent = 0.55f, color = VryvPink)
                     FunnelStep(label = "3. Намерение «Иду»", value = "$totalGoing", percent = 0.35f, color = VryvLime)
-                    FunnelStep(label = "4. Переходы к билетам", value = "$totalTickets", percent = 0.22f, color = Color(0xFF00E5FF))
+                    FunnelStep(label = "4. Переходы к билетам", value = "$totalTickets", percent = 0.22f, color = Color(0xFF28D7FF))
 
-                    Spacer(modifier = Modifier.height(10.dp))
+                    Spacer(modifier = Modifier.height(12.dp))
                     Text(
                         text = "Конверсия из просмотра в намерение посетить: $conversionRate",
                         color = VryvLime,
-                        fontSize = 12.sp,
+                        fontSize = 12.5.sp,
                         fontWeight = FontWeight.SemiBold
                     )
                 }
             }
 
-            // Events breakdown
+            // Audience portrait card matching d4.png
             item {
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .clip(RoundedCornerShape(18.dp))
+                        .clip(RoundedCornerShape(20.dp))
                         .background(VryvCard)
-                        .padding(16.dp)
+                        .border(1.dp, VryvLine, RoundedCornerShape(20.dp))
+                        .padding(18.dp)
+                ) {
+                    Text(
+                        text = "Портрет аудитории",
+                        color = VryvTextPrimary,
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                    Spacer(modifier = Modifier.height(12.dp))
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(10.dp)
+                    ) {
+                        Column(
+                            modifier = Modifier
+                                .weight(1f)
+                                .clip(RoundedCornerShape(14.dp))
+                                .background(VryvCardElevated)
+                                .padding(12.dp)
+                        ) {
+                            Text("Основной возраст", color = VryvTextSecondary, fontSize = 11.5.sp)
+                            Spacer(modifier = Modifier.height(4.dp))
+                            Text("21–27 лет (64%)", color = VryvTextPrimary, fontSize = 15.sp, fontWeight = FontWeight.Bold)
+                        }
+                        Column(
+                            modifier = Modifier
+                                .weight(1f)
+                                .clip(RoundedCornerShape(14.dp))
+                                .background(VryvCardElevated)
+                                .padding(12.dp)
+                        ) {
+                            Text("Ищут компанию", color = VryvTextSecondary, fontSize = 11.5.sp)
+                            Spacer(modifier = Modifier.height(4.dp))
+                            Text("42% гостей", color = VryvLime, fontSize = 15.sp, fontWeight = FontWeight.Bold)
+                        }
+                    }
+                }
+            }
+
+            // Events breakdown matching d4.png
+            item {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(20.dp))
+                        .background(VryvCard)
+                        .border(1.dp, VryvLine, RoundedCornerShape(20.dp))
+                        .padding(18.dp)
                 ) {
                     Text(
                         text = "Эффективность по событиям (${venueEvents.size})",
@@ -137,7 +188,7 @@ fun BusinessAnalyticsScreen(
                     if (venueEvents.isEmpty()) {
                         Text(text = "У заведения пока нет созданных событий", color = VryvTextSecondary, fontSize = 13.sp)
                     } else {
-                        venueEvents.forEach { ev ->
+                        venueEvents.forEachIndexed { idx, ev ->
                             Row(
                                 modifier = Modifier
                                     .fillMaxWidth()
@@ -146,17 +197,21 @@ fun BusinessAnalyticsScreen(
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
                                 Column(modifier = Modifier.weight(1f)) {
-                                    Text(text = ev.title, color = VryvTextPrimary, fontSize = 14.sp, fontWeight = FontWeight.SemiBold)
+                                    Text(text = ev.title, color = VryvTextPrimary, fontSize = 14.5.sp, fontWeight = FontWeight.SemiBold)
                                     Text(text = "${ev.dateDisplay} · ${ev.status.label}", color = VryvTextSecondary, fontSize = 12.sp)
                                 }
                                 Column(horizontalAlignment = Alignment.End) {
-                                    Text(text = "${ev.goingCount} идут", color = VryvLime, fontSize = 13.sp, fontWeight = FontWeight.Bold)
+                                    Text(text = "${ev.goingCount} идут", color = VryvLime, fontSize = 13.5.sp, fontWeight = FontWeight.Bold)
                                     Text(text = "${ev.viewsCount} просм.", color = VryvTextMuted, fontSize = 11.5.sp)
                                 }
+                            }
+                            if (idx < venueEvents.lastIndex) {
+                                HorizontalDivider(color = VryvLine, thickness = 0.5.dp)
                             }
                         }
                     }
                 }
+                Spacer(modifier = Modifier.height(90.dp))
             }
         }
     }
@@ -170,9 +225,9 @@ private fun FunnelStep(label: String, value: String, percent: Float, color: Colo
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             Text(text = label, color = VryvTextSecondary, fontSize = 13.sp)
-            Text(text = value, color = VryvTextPrimary, fontSize = 13.sp, fontWeight = FontWeight.Bold)
+            Text(text = value, color = VryvTextPrimary, fontSize = 13.5.sp, fontWeight = FontWeight.Bold)
         }
-        Spacer(modifier = Modifier.height(4.dp))
+        Spacer(modifier = Modifier.height(5.dp))
         Box(
             modifier = Modifier
                 .fillMaxWidth()
