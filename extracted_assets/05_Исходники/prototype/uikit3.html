@@ -1,0 +1,53 @@
+<!doctype html><html lang="ru"><head><meta charset="utf-8"><link rel="stylesheet" href="common.css"><link rel="stylesheet" href="s2.css">
+<style>body{background:var(--bg)}#st{width:1920px;padding:72px 80px 80px;background:var(--bg)}
+.grid{display:grid;grid-template-columns:repeat(12,1fr);gap:24px;margin-top:28px}
+.panel{background:#121217;border-radius:32px;padding:32px;box-shadow:inset 0 0 0 1px rgba(255,255,255,.05)}
+.pt{font-size:13px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--text2);margin-bottom:22px;display:flex;justify-content:space-between}.pt b{color:var(--pink)}
+.c2{font-size:12px;color:var(--text2);margin-top:8px;font-weight:500}
+</style></head><body><script src="icons.js"></script><script src="s2-lib.js"></script><div id="st"></div><script>
+document.getElementById('st').innerHTML=`
+<div style="display:flex;justify-content:space-between;align-items:flex-end"><div><div style="font-size:15px;font-weight:700;color:var(--pink);letter-spacing:.1em">DESIGN SYSTEM · v1.3 · ДОПОЛНЕНИЕ MVP</div><div style="font-size:60px;font-weight:780;letter-spacing:-.04em;margin-top:10px">Компания и общение</div><div style="font-size:20px;color:var(--text2);margin-top:10px">Компоненты новых экранов MVP: участники, чаты, карта, приглашения и статусы мероприятий. Цвета, шрифт, радиусы и отступы — из UI-kit v1.0</div></div><img src="ph/logo.png" style="height:110px"></div>
+<div class="grid">
+<div class="panel" style="grid-column:span 6"><div class="pt">Строка участника и выбор друзей <b>15</b></div>
+<div class="grp">${[['av1','Алина','@alina.tech · идёт на техно',1],['av3','Катя','@katya.ink · планы скрыты',0]].map(([a,n,s,on])=>`<div class="li noi" style="min-height:62px">${AV(a,44)}<div><div style="font-size:15px">${n}</div><div class="t-cap" style="font-size:12.5px">${s}</div></div><div class="chk ${on?'on':''}"></div></div>`).join('')}</div>
+<div class="c2">Строка 62 · аватар 44 · подпись с @username. Чекбокс 26 · r13 · выбран — розовая заливка</div>
+<div style="display:flex;gap:16px;align-items:center;margin-top:20px"><div class="chk"></div><div class="chk on"></div><div style="width:1px;height:30px;background:#2A2A33"></div><div class="stack">${AV('av1',26)}${AV('av5',26)}${AV('av4',26)}</div><div class="c2" style="margin:0">Стек участников · -9px · рамка цвета фона</div></div></div>
+
+<div class="panel" style="grid-column:span 6"><div class="pt">Чаты <b>16</b></div>
+<div style="display:flex;flex-direction:column;gap:10px;max-width:520px">
+<div style="display:flex;gap:10px">${AV('av4',30)}<div class="bubble in">Встречаемся в 22:30 у входа, ок?</div></div>
+<div style="display:flex;gap:10px;justify-content:flex-end"><div class="bubble out">Ок! Займу очередь в гардероб</div></div>
+<div style="display:flex;gap:10px">${AV('av1',30)}<div class="bubble in">Я опоздаю минут на 15, начните без меня</div></div></div>
+<div class="c2">Пузырь · входящий слева с аватаром 30, исходящий справа · розовый</div>
+<div style="display:flex;gap:8px;margin-top:16px">${['Отлично!','Кто за баром после?','Беру подругу'].map(t=>`<span class="chip sm" style="height:30px">${t}</span>`).join('')}<div style="flex:1"></div><div style="display:flex;gap:10px;align-items:center"><div class="inp" style="flex:1;height:44px;border-radius:22px"><span class="sp ph-t">Сообщение</span></div><div class="ibtn" style="background:var(--pink);width:44px;height:44px;border-radius:22px">${ic('send','style="width:19px;height:19px"')}</div></div></div>
+<div class="c2">Быстрые ответы-чипы + поле 44 · r22 · отправка розовой кнопкой</div></div>
+
+<div class="panel" style="grid-column:span 7"><div class="pt">Карта «Прямо сейчас» <b>17</b></div>
+<div style="display:flex;gap:24px;align-items:center">
+<div style="width:420px;height:260px;border-radius:24px;overflow:hidden;position:relative;background:#0D0D11"><img src="map/minsk_dark.png" style="width:100%;height:100%;object-fit:cover;opacity:.85">
+<div class="mcluster" style="top:18%;left:26%"><b>7</b><span>техно</span></div>
+<div class="mcluster" style="top:40%;left:52%"><b>12</b><span>смешанные</span></div>
+<div class="mpin" style="top:26%;left:70%"><img src="${I('techno')}" style="width:100%;height:100%;object-fit:cover;border-radius:12px"></div>
+<div style="position:absolute;left:40%;top:78%;width:18px;height:18px;border-radius:9px;background:var(--lime);box-shadow:0 0 0 6px rgba(199,255,40,.18)"></div></div>
+<div style="flex:1">
+<div class="c2" style="margin:0">Кластер 52 · r26 · розовый · счётчик + категория. Тап раскрывает точки.</div>
+<div class="c2">Пин места 44 · r14 · фото события + рамка 2px</div>
+<div class="c2">Моя точка 18 · лайм + ореол 18%</div>
+<div style="display:flex;gap:8px;margin-top:16px">${['Сейчас','Через час','Сегодня вечером'].map((t,i)=>`<div class="chip ${i?'':'on'}" style="height:34px;font-size:13.5px">${t}</div>`).join('')}</div>
+<div class="c2">Фильтры времени · чипы 34</div></div></div></div>
+
+<div class="panel" style="grid-column:span 5"><div class="pt">Статусы мероприятий <b>18</b></div>
+<div style="display:flex;gap:8px;flex-wrap:wrap"><span class="status st-off"><i></i>Отменено организатором</span><span class="status st-wait"><i></i>Перенесено</span><span class="status st-mute">Завершено</span><span class="status st-off"><i></i>Нет мест</span><span class="status st-wait"><i style="background:var(--lime)"></i>Ждёт ответа</span></div>
+<div class="c2">Новые статусы планов: отменено и нет мест — розовые, перенос — ожидание, завершено — серые</div>
+<div style="margin-top:20px;background:var(--card);border-radius:20px;padding:14px;display:flex;gap:12px;align-items:center;opacity:.8"><div class="ph" style="width:56px;height:56px;border-radius:14px;flex:none"><img src="${I('rooftop')}"></div><div style="flex:1"><div class="t-h3" style="font-size:14.5px;text-decoration:line-through">Rooftop Sunset Party</div><div class="t-cap" style="margin-top:2px">Сб 24 · 18:00 · план удалён</div></div><span class="status st-off" style="height:22px"><i></i>Отменено</span></div>
+<div class="c2">Отменённое событие: зачёркнутый заголовок, карточка приглушена 75%</div>
+<div style="display:flex;gap:8px;margin-top:16px">${['Пойду','Не смогу'].map((t,i)=>`<button class="btn ${i?'sec':'pri'} sm" style="height:32px;padding:0 14px;font-size:13px">${t}</button>`).join('')}</div>
+<div class="c2">Действия прямо из уведомления · кнопки 32</div></div>
+
+<div class="panel" style="grid-column:span 12"><div class="pt">Жалоба и блокировка <b>19</b></div>
+<div style="display:flex;gap:24px">
+<div style="flex:1"><div class="grp" style="max-width:440px">${LI('flag','Пожаловаться','',{chev:true})}${LI('ban','Заблокировать','',{danger:true,chev:true})}</div><div class="c2">Меню пользователя: жалоба — обычная строка, блокировка — опасная (розовая)</div></div>
+<div style="flex:1"><div style="display:flex;flex-wrap:wrap;gap:7px;max-width:560px">${['Спам','Оскорбления','Фейковое событие','Опасное поведение','18+ без метки'].map((t,i)=>`<span class="chip ${i<2?'sel':''}" style="height:32px;font-size:13.5px">${t}</span>`).join('')}</div><div class="c2">Причина жалобы — чипы 32, мультивыбор. Отправка на админ-сайт, автор не узнает жалобщика.</div></div>
+<div style="flex:1;display:flex;gap:16px;align-items:center"><div style="width:72px;height:72px;border-radius:36px;background:var(--card);display:flex;align-items:center;justify-content:center">${ic('ban','style="width:34px;height:34px;color:var(--pink)"')}</div><div><div class="t-h3">Пользователь заблокирован</div><div class="c2" style="margin-top:4px">Иконка в круге 72 · розовый бан · сообщения скрыты</div></div></div></div></div>
+</div>`;
+</script></body></html>

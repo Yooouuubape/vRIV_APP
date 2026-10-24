@@ -1,0 +1,618 @@
+package com.example.data
+
+import com.example.R
+
+object MockDataProvider {
+
+    fun getDemoUsers(): List<VryvUser> {
+        return listOf(
+            VryvUser(
+                id = "u_max",
+                name = "Максим Салуков",
+                username = "max.vryv",
+                email = "max.vryv@gmail.com",
+                password = "TechnoMinsk2026",
+                avatarRes = R.drawable.av2,
+                bio = "Техно по пятницам, стендап по средам. Ищу компанию на тусовки.",
+                city = "Минск",
+                budget = "До 50 BYN",
+                interests = listOf("Техно", "Хаус", "Стендап", "Бары", "Концерты"),
+                formatOfRest = listOf("С друзьями", "Новые знакомства", "Спонтанные события"),
+                friendsCount = 86,
+                savedCount = 4,
+                visitedCount = 48,
+                privacyPlansVisibility = "Друзья",
+                venueId = "v_loft13",
+                isGuest = false
+            ),
+            VryvUser(
+                id = "u_alina",
+                name = "Алина",
+                username = "alina.tech",
+                email = "alina.tech@gmail.com",
+                password = "Alina2026",
+                avatarRes = R.drawable.av1,
+                bio = "Люблю андеграунд, современное искусство и винил.",
+                city = "Минск",
+                budget = "До 50 BYN",
+                interests = listOf("Техно", "Андеграунд", "Выставки", "Бары"),
+                formatOfRest = listOf("С друзьями", "Новые знакомства"),
+                friendsCount = 42,
+                savedCount = 8,
+                visitedCount = 21,
+                privacyPlansVisibility = "Все",
+                venueId = null,
+                isGuest = false
+            ),
+            VryvUser(
+                id = "u_artem",
+                name = "Артём",
+                username = "artem.minsk",
+                email = "artem.minsk@gmail.com",
+                password = "Artem2026",
+                avatarRes = R.drawable.av3,
+                bio = "Инди-рок, кофе, ночные прогулки по Немиге.",
+                city = "Минск",
+                budget = "До 20 BYN",
+                interests = listOf("Концерты", "Кофейни", "Рок"),
+                formatOfRest = listOf("Люблю ходить один", "С друзьями"),
+                friendsCount = 19,
+                savedCount = 3,
+                visitedCount = 14,
+                privacyPlansVisibility = "Друзья",
+                venueId = null,
+                isGuest = false
+            )
+        )
+    }
+
+    fun getInitialUser(): VryvUser {
+        return getDemoUsers().first()
+    }
+
+    fun getInitialEvents(): List<VryvEvent> {
+        return listOf(
+            VryvEvent(
+                id = "e_techno",
+                venueId = "v_republic",
+                title = "Techno Room: Ночь 3",
+                description = "Главный рейв осени в Минске. Мощный саундсистема Funktion-One, световые инсталляции и лайнап из лучших локальных и европейских продюсеров.",
+                coverRes = R.drawable.techno,
+                category = "Вечеринки",
+                genres = listOf("Техно", "Хаус"),
+                dateDisplay = "Сегодня, 24 окт",
+                timeDisplay = "23:00 – 06:00",
+                dateCategory = "TODAY",
+                venueName = "Re:Public",
+                address = "Минск, ул. Притыцкого, 62",
+                priceByn = 30.0,
+                ageLimit = "18+",
+                status = EventStatus.PUBLISHED,
+                isBookmarked = true,
+                isGoing = false,
+                goingCount = 318,
+                canFindCompany = true,
+                mapX = 0.38f,
+                mapY = 0.46f,
+                viewsCount = 1420,
+                ticketClicksCount = 186
+            ),
+            VryvEvent(
+                id = "e_rooftop",
+                venueId = "v_loft13",
+                title = "Rooftop Sunset Party",
+                description = "Золотой час на высоте птичьего полета. Теплые хаус-ритмы, авторские коктейли и потрясающий панорамный вид на вечерний Минск.",
+                coverRes = R.drawable.rooftop,
+                category = "Вечеринки",
+                genres = listOf("Хаус", "Лаунж"),
+                dateDisplay = "Сегодня, 24 окт",
+                timeDisplay = "18:00 – 23:00",
+                dateCategory = "TODAY",
+                venueName = "Крыша Loft 13",
+                address = "Минск, ул. Зыбицкая, 6",
+                priceByn = 40.0,
+                ageLimit = "18+",
+                status = EventStatus.PUBLISHED,
+                isBookmarked = true,
+                isGoing = true,
+                goingCount = 189,
+                canFindCompany = true,
+                mapX = 0.52f,
+                mapY = 0.50f,
+                viewsCount = 890,
+                ticketClicksCount = 124
+            ),
+            VryvEvent(
+                id = "e_concert",
+                venueId = "v_primehall",
+                title = "Северный Свет: Живой звук",
+                description = "Большой сольный концерт инди-рок группы. Презентация нового альбома и любимые хиты в акустическом и драйвовом звучании.",
+                coverRes = R.drawable.concert,
+                category = "Концерты",
+                genres = listOf("Инди", "Рок"),
+                dateDisplay = "Сегодня, 24 окт",
+                timeDisplay = "20:00 – 22:30",
+                dateCategory = "TODAY",
+                venueName = "Prime Hall",
+                address = "Минск, пр-т Победителей, 65",
+                priceByn = 55.0,
+                ageLimit = "16+",
+                status = EventStatus.PUBLISHED,
+                isBookmarked = false,
+                isGoing = true,
+                goingCount = 420,
+                canFindCompany = true,
+                mapX = 0.45f,
+                mapY = 0.38f,
+                viewsCount = 2100,
+                ticketClicksCount = 310
+            ),
+            VryvEvent(
+                id = "e_jazz",
+                venueId = "v_loft13",
+                title = "Jazz Session & Wine Night",
+                description = "Камерный вечер живого джаза, импровизаций и дегустации вин. Идеальная атмосфера для спокойного субботнего отдыха или первого свидания.",
+                coverRes = R.drawable.jazz,
+                category = "Концерты",
+                genres = listOf("Джаз", "Блюз"),
+                dateDisplay = "Завтра, 25 окт",
+                timeDisplay = "20:00 – 23:00",
+                dateCategory = "TOMORROW",
+                venueName = "Loft 13",
+                address = "Минск, ул. Зыбицкая, 6",
+                priceByn = 25.0,
+                ageLimit = "18+",
+                status = EventStatus.PUBLISHED,
+                isBookmarked = true,
+                isGoing = false,
+                goingCount = 85,
+                canFindCompany = true,
+                mapX = 0.53f,
+                mapY = 0.50f,
+                viewsCount = 520,
+                ticketClicksCount = 68
+            ),
+            VryvEvent(
+                id = "e_standup",
+                venueId = "v_standupbar",
+                title = "Открытый микрофон StandUp",
+                description = "Опытные комики проверяют свежий материал, а новички борются за зрительские симпатии. Смешно, честно и без цензуры.",
+                coverRes = R.drawable.standup,
+                category = "Стендап",
+                genres = listOf("Комедия", "Импровизация"),
+                dateDisplay = "Ср 21 окт",
+                timeDisplay = "19:30 – 21:30",
+                dateCategory = "TODAY",
+                venueName = "StandUp Bar",
+                address = "Минск, ул. Карла Маркса, 21",
+                priceByn = 15.0,
+                ageLimit = "18+",
+                status = EventStatus.COMPLETED,
+                isBookmarked = false,
+                isGoing = false,
+                goingCount = 64,
+                canFindCompany = true,
+                mapX = 0.54f,
+                mapY = 0.55f,
+                viewsCount = 310,
+                ticketClicksCount = 45
+            ),
+            VryvEvent(
+                id = "e_gallery",
+                venueId = "v_artcenter",
+                title = "Тихий город — Фотовыставка",
+                description = "Концептуальная фотоэкспозиция уличной фотографии Минска на рассвете и в сумерках. Вход свободный.",
+                coverRes = R.drawable.gallery,
+                category = "Выставки",
+                genres = listOf("Искусство", "Фото"),
+                dateDisplay = "До 30 ноя",
+                timeDisplay = "12:00 – 21:00",
+                dateCategory = "WEEKEND",
+                venueName = "Арт-Беларусь",
+                address = "Минск, ул. Козлова, 3",
+                priceByn = 0.0,
+                ageLimit = "0+",
+                status = EventStatus.PUBLISHED,
+                isBookmarked = true,
+                isGoing = false,
+                goingCount = 112,
+                canFindCompany = true,
+                mapX = 0.58f,
+                mapY = 0.47f,
+                viewsCount = 670,
+                ticketClicksCount = 89
+            ),
+            VryvEvent(
+                id = "e_underground",
+                venueId = "v_hide",
+                title = "Андеграунд Рейв: Завод",
+                description = "Индустриальная эстетика, тяжелый бас и танцы до рассвета в аутентичном фабричном цехе.",
+                coverRes = R.drawable.techno,
+                category = "Вечеринки",
+                genres = listOf("Техно", "Андеграунд"),
+                dateDisplay = "Вс 26 окт",
+                timeDisplay = "22:00 – 07:00",
+                dateCategory = "WEEKEND",
+                venueName = "Hide Club",
+                address = "Минск, ул. Октябрьская, 19",
+                priceByn = 35.0,
+                ageLimit = "18+",
+                status = EventStatus.PUBLISHED,
+                isBookmarked = false,
+                isGoing = false,
+                goingCount = 245,
+                canFindCompany = true,
+                mapX = 0.55f,
+                mapY = 0.56f,
+                viewsCount = 980,
+                ticketClicksCount = 140
+            ),
+            VryvEvent(
+                id = "e_bar_hop",
+                venueId = "v_karma",
+                title = "Бар-кроул по Октябрьской",
+                description = "Большой дружеский тур по 5 лучшим барам улицы Октябрьская. Специальные сет-напитки и квесты.",
+                coverRes = R.drawable.rooftop,
+                category = "Бары",
+                genres = listOf("Бары", "Новые знакомства"),
+                dateDisplay = "Сб 24 окт",
+                timeDisplay = "21:00 – 03:00",
+                dateCategory = "TODAY",
+                venueName = "Karma Bar",
+                address = "Минск, ул. Октябрьская, 16",
+                priceByn = 20.0,
+                ageLimit = "18+",
+                status = EventStatus.CANCELLED,
+                cancellationReason = "Технические неполадки на площадке",
+                isBookmarked = false,
+                isGoing = false,
+                goingCount = 50,
+                canFindCompany = false,
+                mapX = 0.56f,
+                mapY = 0.55f,
+                viewsCount = 280,
+                ticketClicksCount = 15
+            ),
+            // Venue Loft 13 specific Draft and Moderation events
+            VryvEvent(
+                id = "e_loft_draft",
+                venueId = "v_loft13",
+                title = "Acoustic Evening @ Loft 13",
+                description = "Акустический вечер авторской песни и гитарных соло в камерном зале Loft 13.",
+                coverRes = R.drawable.concert,
+                category = "Концерты",
+                genres = listOf("Акустика", "Инди"),
+                dateDisplay = "Пт 6 ноя",
+                timeDisplay = "19:00 – 22:00",
+                dateCategory = "LATER",
+                venueName = "Loft 13",
+                address = "Минск, ул. Зыбицкая, 6",
+                priceByn = 15.0,
+                ageLimit = "18+",
+                status = EventStatus.DRAFT,
+                isBookmarked = false,
+                isGoing = false,
+                goingCount = 0,
+                canFindCompany = true,
+                mapX = 0.53f,
+                mapY = 0.50f,
+                viewsCount = 0,
+                ticketClicksCount = 0
+            ),
+            VryvEvent(
+                id = "e_loft_mod",
+                venueId = "v_loft13",
+                title = "Electronic Live Performance",
+                description = "Специальный лайв-сет модулярного синтеза от резидентов минского андеграунда.",
+                coverRes = R.drawable.techno,
+                category = "Вечеринки",
+                genres = listOf("Техно", "Электроника"),
+                dateDisplay = "Сб 31 окт",
+                timeDisplay = "22:00 – 04:00",
+                dateCategory = "WEEKEND",
+                venueName = "Loft 13",
+                address = "Минск, ул. Зыбицкая, 6",
+                priceByn = 30.0,
+                ageLimit = "18+",
+                status = EventStatus.MODERATION,
+                isBookmarked = false,
+                isGoing = false,
+                goingCount = 0,
+                canFindCompany = true,
+                mapX = 0.53f,
+                mapY = 0.50f,
+                viewsCount = 0,
+                ticketClicksCount = 0
+            )
+        )
+    }
+
+    fun getInitialGroups(): List<CompanyGroup> {
+        return listOf(
+            CompanyGroup(
+                id = "g_techno_1",
+                eventId = "e_techno",
+                eventTitle = "Techno Room: Ночь 3",
+                title = "Идём на Techno Room",
+                meetingTime = "22:30",
+                meetingPlace = "У главного входа в Re:Public",
+                maxMembers = 6,
+                currentMembersCount = 4,
+                isOpen = true,
+                creatorId = "u_alina",
+                creatorName = "Алина",
+                isUserJoined = false,
+                isUserPending = false,
+                isUserCreator = false,
+                memberAvatars = listOf(R.drawable.av1, R.drawable.av3, R.drawable.av4, R.drawable.av5),
+                memberIds = listOf("u_alina", "u_artem", "u_daria", "u_kirill"),
+                chatMessages = listOf(
+                    ChatMessage("m1", "u_alina", "Алина", "Всем привет! Собираемся в 22:30, чтобы без очереди войти.", "18:20", false),
+                    ChatMessage("m2", "u_artem", "Артём", "Я беру такси от Немиги, могу подхватить двоих.", "18:25", false)
+                )
+            ),
+            CompanyGroup(
+                id = "g_techno_2",
+                eventId = "e_techno",
+                eventTitle = "Techno Room: Ночь 3",
+                title = "Techno Room — Столик / Компания",
+                meetingTime = "23:00",
+                meetingPlace = "Re:Public, второй этаж",
+                maxMembers = 5,
+                currentMembersCount = 3,
+                isOpen = false, // Закрытая группа с заявками
+                creatorId = "u_max",
+                creatorName = "Максим Салуков",
+                isUserJoined = true,
+                isUserPending = false,
+                isUserCreator = true,
+                memberAvatars = listOf(R.drawable.av2, R.drawable.av1, R.drawable.av3),
+                memberIds = listOf("u_max", "u_alina", "u_artem"),
+                pendingApplications = listOf(
+                    GroupApplication(
+                        id = "app_1",
+                        groupId = "g_techno_2",
+                        userId = "u_daria",
+                        userName = "Дарья",
+                        userAvatarRes = R.drawable.av4,
+                        status = "PENDING",
+                        timestamp = "10 минут назад"
+                    )
+                ),
+                chatMessages = listOf(
+                    ChatMessage("m3", "u_max", "Максим Салуков", "Забронировал столик на втором этаже, звук отличный!", "16:00", true)
+                )
+            ),
+            CompanyGroup(
+                id = "g_rooftop_1",
+                eventId = "e_rooftop",
+                eventTitle = "Rooftop Sunset Party",
+                title = "Крыша Loft 13 на закат",
+                meetingTime = "18:00",
+                meetingPlace = "Loft 13, первый этаж у бара",
+                maxMembers = 8,
+                currentMembersCount = 5,
+                isOpen = true,
+                creatorId = "u_max",
+                creatorName = "Максим Салуков",
+                isUserJoined = true,
+                isUserPending = false,
+                isUserCreator = true,
+                memberAvatars = listOf(R.drawable.av2, R.drawable.av1, R.drawable.av5),
+                memberIds = listOf("u_max", "u_alina", "u_kirill"),
+                chatMessages = listOf(
+                    ChatMessage("m4", "u_max", "Максим Салуков", "Встречаемся на крыше в 18:00, закат обещает быть бомбическим!", "15:40", true),
+                    ChatMessage("m5", "u_alina", "Алина", "Ура! Я уже подхожу к Зыбицкой.", "17:10", false)
+                )
+            ),
+            CompanyGroup(
+                id = "g_jazz_1",
+                eventId = "e_jazz",
+                eventTitle = "Jazz Session & Wine Night",
+                title = "Ценители джаза в Loft 13",
+                meetingTime = "19:45",
+                meetingPlace = "Зыбицкая 6, терраса",
+                maxMembers = 4,
+                currentMembersCount = 2,
+                isOpen = true,
+                creatorId = "u_artem",
+                creatorName = "Артём",
+                isUserJoined = false,
+                isUserPending = false,
+                isUserCreator = false,
+                memberAvatars = listOf(R.drawable.av3, R.drawable.av4),
+                memberIds = listOf("u_artem", "u_daria"),
+                chatMessages = listOf(
+                    ChatMessage("m6", "u_artem", "Артём", "Идем послушать живой контрабас и взять бокал рислинга.", "Вчера", false)
+                )
+            )
+        )
+    }
+
+    fun getInitialCompanionUsers(): List<CompanionUser> {
+        return listOf(
+            CompanionUser(
+                id = "u_alina",
+                name = "Алина",
+                username = "alina.tech",
+                avatarRes = R.drawable.av1,
+                bio = "Люблю андеграунд, современное искусство и винил. Ищу компанию на техно.",
+                sharedTags = listOf("Техно", "Андеграунд", "Выставки"),
+                isRequestSent = false,
+                isBlocked = false,
+                isFriend = true,
+                isOnline = true
+            ),
+            CompanionUser(
+                id = "u_artem",
+                name = "Артём",
+                username = "artem.minsk",
+                avatarRes = R.drawable.av3,
+                bio = "Инди-рок, кофе, ночные прогулки по Немиге.",
+                sharedTags = listOf("Концерты", "Бары", "Рок"),
+                isRequestSent = false,
+                isBlocked = false,
+                isFriend = true,
+                isOnline = false
+            ),
+            CompanionUser(
+                id = "u_daria",
+                name = "Дарья",
+                username = "daria.v",
+                avatarRes = R.drawable.av4,
+                bio = "Стендап и авторские коктейли. Люблю спонтанные вылазки.",
+                sharedTags = listOf("Стендап", "Бары", "Хаус"),
+                isRequestSent = false,
+                isBlocked = false,
+                isFriend = false,
+                isOnline = true
+            ),
+            CompanionUser(
+                id = "u_kirill",
+                name = "Кирилл",
+                username = "kirill.sound",
+                avatarRes = R.drawable.av5,
+                bio = "Диджей, саунд-дизайнер. Всегда в поиске сочного звука.",
+                sharedTags = listOf("Техно", "Хаус"),
+                isRequestSent = false,
+                isBlocked = false,
+                isFriend = false,
+                isOnline = false
+            )
+        )
+    }
+
+    fun getInitialDirectDialogs(companions: List<CompanionUser>): List<DirectDialog> {
+        val alina = companions.find { it.id == "u_alina" } ?: getInitialCompanionUsers().first()
+        val artem = companions.find { it.id == "u_artem" } ?: getInitialCompanionUsers()[1]
+
+        return listOf(
+            DirectDialog(
+                id = "dm_alina",
+                otherUser = alina,
+                lastMessage = "Договорились, увидимся на Rooftop!",
+                time = "17:30",
+                unreadCount = 1,
+                messages = listOf(
+                    ChatMessage("dm1", "u_alina", "Алина", "Привет! Ты сегодня идешь в Loft 13 на закат?", "17:15", false),
+                    ChatMessage("dm2", "u_max", "Максим Салуков", "Привет! Да, как раз собираюсь туда к 18:00.", "17:22", true),
+                    ChatMessage("dm3", "u_alina", "Алина", "Договорились, увидимся на Rooftop!", "17:30", false)
+                )
+            ),
+            DirectDialog(
+                id = "dm_artem",
+                otherUser = artem,
+                lastMessage = "Слушай, на Северный Свет билеты еще остались?",
+                time = "Вчера",
+                unreadCount = 0,
+                messages = listOf(
+                    ChatMessage("dm4", "u_artem", "Артём", "Слушай, на Северный Свет билеты еще остались?", "Вчера", false),
+                    ChatMessage("dm5", "u_max", "Максим Салуков", "Вроде на танцпол были еще в кассах.", "Вчера", true)
+                )
+            )
+        )
+    }
+
+    fun getInitialBusinessInquiries(): List<BusinessInquiryMessage> {
+        return listOf(
+            BusinessInquiryMessage(
+                id = "binq_1",
+                venueId = "v_loft13",
+                userId = "u_alina",
+                userName = "Алина",
+                userAvatarRes = R.drawable.av1,
+                subject = "Бронь столика на Rooftop",
+                lastMessage = "Подскажите, депозит на стол у окна действует?",
+                time = "16:45",
+                unreadCount = 1,
+                messages = listOf(
+                    ChatMessage("bm1", "u_alina", "Алина", "Добрый день! Хотим забронировать столик на 4 человека на сегодняшнюю крышу.", "16:40", false),
+                    ChatMessage("bm2", "u_alina", "Алина", "Подскажите, депозит на стол у окна действует?", "16:45", false)
+                )
+            ),
+            BusinessInquiryMessage(
+                id = "binq_2",
+                venueId = "v_loft13",
+                userId = "u_artem",
+                userName = "Артём",
+                userAvatarRes = R.drawable.av3,
+                subject = "Вход на Jazz Session",
+                lastMessage = "Спасибо, придем пораньше!",
+                time = "Вчера",
+                unreadCount = 0,
+                messages = listOf(
+                    ChatMessage("bm3", "u_artem", "Артём", "Здравствуйте! Можно ли оплатить вход на джаз картой на месте?", "Вчера", false),
+                    ChatMessage("bm4", "u_max", "Loft 13", "Здравствуйте! Да, терминалы работают на входе и в баре.", "Вчера", true),
+                    ChatMessage("bm5", "u_artem", "Артём", "Спасибо, придем пораньше!", "Вчера", false)
+                )
+            )
+        )
+    }
+
+    fun getInitialNotifications(): List<NotificationItem> {
+        return listOf(
+            NotificationItem(
+                id = "notif_1",
+                type = "invite",
+                title = "Приглашение от Алины",
+                subtitle = "Алина приглашает тебя пойти на Techno Room: Ночь 3",
+                time = "15 мин назад",
+                isRead = false,
+                relatedEventId = "e_techno",
+                relatedUserId = "u_alina",
+                inviteId = "inv_1"
+            ),
+            NotificationItem(
+                id = "notif_2",
+                type = "event_change",
+                title = "Внимание: событие отменено",
+                subtitle = "«Бар-кроул по Октябрьской» отменено заведением. Причина: Ремонт площадки.",
+                time = "2 часа назад",
+                isRead = false,
+                relatedEventId = "e_bar_hop"
+            ),
+            NotificationItem(
+                id = "notif_3",
+                type = "group",
+                title = "Новая заявка в группу",
+                subtitle = "Дарья хочет присоединиться к компании «Techno Room — Столик»",
+                time = "10 мин назад",
+                isRead = false,
+                relatedGroupId = "g_techno_2",
+                relatedUserId = "u_daria"
+            )
+        )
+    }
+
+    fun getInitialBusinessMetrics(): Map<String, BusinessMetricSet> {
+        return mapOf(
+            "Сегодня" to BusinessMetricSet(
+                period = "Сегодня",
+                views = 890,
+                saves = 142,
+                going = 189,
+                ticketClicks = 124,
+                conversionRate = "13.9%",
+                newGuests = 48
+            ),
+            "7 дней" to BusinessMetricSet(
+                period = "7 дней",
+                views = 5420,
+                saves = 820,
+                going = 1045,
+                ticketClicks = 780,
+                conversionRate = "15.2%",
+                newGuests = 295
+            ),
+            "30 дней" to BusinessMetricSet(
+                period = "30 дней",
+                views = 19800,
+                saves = 2850,
+                going = 3920,
+                ticketClicks = 2640,
+                conversionRate = "14.6%",
+                newGuests = 1140
+            )
+        )
+    }
+}

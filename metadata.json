@@ -1,0 +1,6 @@
+{
+  "name": "ВРЫВ",
+  "description": "Социальная платформа для поиска мероприятий, спонтанного отдыха и новых знакомств в Минске",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
