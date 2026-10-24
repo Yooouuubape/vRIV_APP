@@ -47,56 +47,45 @@ fun VryvMainHeader(
         modifier = modifier
             .fillMaxWidth()
             .background(VryvBg)
-            .padding(start = 20.dp, end = 20.dp, top = 4.dp, bottom = 10.dp),
+            .padding(start = 16.dp, end = 16.dp, top = 6.dp, bottom = 8.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(10.dp)
-        ) {
-            Image(
-                painter = painterResource(id = R.drawable.logo),
-                contentDescription = "ВРЫВ Логотип",
-                contentScale = ContentScale.Fit,
-                modifier = Modifier.height(38.dp)
-            )
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(6.dp),
-                modifier = Modifier
-                    .height(34.dp)
-                    .clip(RoundedCornerShape(17.dp))
-                    .background(VryvCard)
-                    .border(1.dp, VryvLine, RoundedCornerShape(17.dp))
-                    .padding(horizontal = 12.dp)
-            ) {
-                Box(
-                    modifier = Modifier
-                        .size(7.dp)
-                        .clip(CircleShape)
-                        .background(VryvPink)
-                )
-                Text(
-                    text = "Минск",
-                    color = VryvTextPrimary,
-                    fontFamily = InterFontFamily,
-                    fontSize = 13.sp,
-                    fontWeight = FontWeight.SemiBold
-                )
-                Icon(
-                    imageVector = VryvIcons.ChevronDown,
-                    contentDescription = null,
-                    tint = VryvTextMuted,
-                    modifier = Modifier.size(13.dp)
-                )
-            }
-        }
+        Image(
+            painter = painterResource(id = R.drawable.logo),
+            contentDescription = "ВРЫВ Логотип",
+            contentScale = ContentScale.Fit,
+            modifier = Modifier.height(42.dp)
+        )
 
         Row(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(6.dp),
+                modifier = Modifier
+                    .height(36.dp)
+                    .clip(RoundedCornerShape(18.dp))
+                    .background(VryvCard)
+                    .border(1.dp, VryvLine, RoundedCornerShape(18.dp))
+                    .padding(horizontal = 14.dp)
+            ) {
+                Icon(
+                    imageVector = VryvIcons.Pin,
+                    contentDescription = null,
+                    tint = VryvPink,
+                    modifier = Modifier.size(16.dp)
+                )
+                Text(
+                    text = "Минск",
+                    color = VryvTextPrimary,
+                    fontFamily = InterFontFamily,
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.SemiBold
+                )
+            }
             VryvIconButton(
                 icon = VryvIcons.Search,
                 onClick = onOpenSearch,

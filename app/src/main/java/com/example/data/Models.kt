@@ -70,10 +70,21 @@ data class VryvEvent(
     val mapY: Float = 0.5f,
     val cancellationReason: String? = null,
     val viewsCount: Int = 340,
-    val ticketClicksCount: Int = 42
+    val ticketClicksCount: Int = 42,
+    val matchPercent: Int = 96,
+    val shortDatePill: String = "",
+    val distanceText: String = "1,2 км",
+    val fullDateTitle: String = "Суббота, 24 октября",
+    val doorsInfo: String = "20:00 — 23:30 · двери в 19:00",
+    val ticketsLeftText: String = "Осталось 38 билетов",
+    val friendsGoingCount: Int = 6,
+    val groupsLookingCount: Int = 3
 ) {
     val priceString: String
-        get() = if (priceByn == 0.0) "Бесплатно" else "${priceByn.toInt()} BYN"
+        get() = if (priceByn == 0.0) "Бесплатно" else "от ${priceByn.toInt()} BYN"
+
+    val pillTimeText: String
+        get() = shortDatePill.ifBlank { "${dateDisplay.substringBefore(",")} · ${timeDisplay.substringBefore(" ")}" }
 }
 
 data class GroupApplication(

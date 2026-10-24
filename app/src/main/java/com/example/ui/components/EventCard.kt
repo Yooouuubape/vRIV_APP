@@ -17,7 +17,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -51,12 +50,12 @@ fun EventCardHero(
     onClick: () -> Unit,
     onSaveToggle: () -> Unit,
     modifier: Modifier = Modifier,
-    badgeLabel: String = "По твоим интересам"
+    badgeLabel: String = "Совпадение ${event.matchPercent}%"
 ) {
     Box(
         modifier = modifier
             .fillMaxWidth()
-            .height(262.dp)
+            .height(310.dp)
             .clip(RoundedCornerShape(28.dp))
             .background(VryvCard)
             .border(1.dp, VryvLine, RoundedCornerShape(28.dp))
@@ -75,31 +74,38 @@ fun EventCardHero(
                 .fillMaxSize()
                 .background(
                     Brush.verticalGradient(
-                        0.0f to Color(0x260B0B0F),
-                        0.38f to Color(0x590B0B0F),
-                        0.78f to Color(0xEB0B0B0F),
-                        1.0f to VryvBg
+                        0.0f to Color(0x1A0B0B0F),
+                        0.42f to Color(0x400B0B0F),
+                        0.76f to Color(0xE00B0B0F),
+                        1.0f to Color(0xF80B0B0F)
                     )
                 )
         )
 
-        // Top tags + Save button
+        // Top row: Date/Time dark pill on left + Heart glass button on right (Screenshot 1)
         Row(
             modifier = Modifier
                 .fillMaxWidth()
                 .align(Alignment.TopCenter)
                 .padding(14.dp),
             horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.Top
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                VryvTag(
-                    text = event.genres.firstOrNull() ?: "Электроника",
-                    style = VryvTagStyle.PINK
-                )
-                VryvTag(
-                    text = badgeLabel,
-                    style = VryvTagStyle.DARK
+            Box(
+                modifier = Modifier
+                    .height(30.dp)
+                    .clip(RoundedCornerShape(15.dp))
+                    .background(Color(0xA60B0B0F))
+                    .border(1.dp, Color(0x1FFFFFFF), RoundedCornerShape(15.dp))
+                    .padding(horizontal = 12.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = event.pillTimeText,
+                    color = VryvTextPrimary,
+                    fontFamily = InterFontFamily,
+                    fontSize = 12.5.sp,
+                    fontWeight = FontWeight.SemiBold
                 )
             }
 
@@ -107,215 +113,344 @@ fun EventCardHero(
                 modifier = Modifier
                     .size(38.dp)
                     .clip(CircleShape)
-                    .background(if (event.isBookmarked) VryvPink else Color(0x7014141A))
+                    .background(Color(0x8814141A))
                     .border(1.dp, Color(0x24FFFFFF), CircleShape)
                     .clickable { onSaveToggle() }
                     .testTag("bookmark_hero_${event.id}"),
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
-                    imageVector = VryvIcons.Save,
-                    contentDescription = "Сохранить",
-                    tint = Color.White,
+                    imageVector = if (event.isBookmarked) VryvIcons.HeartFill else VryvIcons.Heart,
+                    contentDescription = "В избранное",
+                    tint = if (event.isBookmarked) VryvPink else Color.White,
                     modifier = Modifier.size(18.dp)
                 )
             }
         }
 
-        // Bottom info
+        // Bottom overlay matching Screenshot 1 1-to-1
         Column(
             modifier = Modifier
                 .align(Alignment.BottomStart)
                 .fillMaxWidth()
                 .padding(18.dp)
         ) {
+            // Lime match badge: "Совпадение 96%"
+            Box(
+                modifier = Modifier
+                    .height(24.dp)
+                    .clip(RoundedCornerShape(12.dp))
+                    .background(VryvLime)
+                    .padding(horizontal = 10.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = badgeLabel,
+                    color = VryvBg,
+                    fontFamily = InterFontFamily,
+                    fontSize = 11.5.sp,
+                    fontWeight = FontWeight.Bold,
+                    letterSpacing = (-0.2).sp
+                )
+            }
+
+            Spacer(modifier = Modifier.height(10.dp))
+
             Text(
                 text = event.title,
                 color = VryvTextPrimary,
                 fontFamily = InterFontFamily,
-                fontSize = 22.sp,
-                fontWeight = FontWeight.Bold,
-                letterSpacing = (-0.5).sp,
-                lineHeight = 25.sp,
+                fontSize = 26.sp,
+                fontWeight = FontWeight.ExtraBold,
+                letterSpacing = (-0.7).sp,
+                lineHeight = 29.sp,
                 maxLines = 2,
                 overflow = TextOverflow.Ellipsis
             )
 
-            Spacer(modifier = Modifier.height(6.dp))
-
-            Text(
-                text = "${event.dateDisplay}, ${event.timeDisplay} · ${event.venueName}, ${event.address}",
-                color = Color(0xFFD4D4DE),
-                fontFamily = InterFontFamily,
-                fontSize = 13.sp,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis
-            )
-
-            HorizontalDivider(
-                color = Color(0x14FFFFFF),
-                thickness = 1.dp,
-                modifier = Modifier.padding(top = 12.dp, bottom = 10.dp)
-            )
+            Spacer(modifier = Modifier.height(8.dp))
 
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
+                Text(
+                    text = "${event.venueName} · ${event.address}",
+                    color = VryvTextMuted,
+                    fontFamily = InterFontFamily,
+                    fontSize = 13.5.sp,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier
+                        .weight(1f)
+                        .padding(end = 10.dp)
+                )
+
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    horizontalArrangement = Arrangement.spacedBy(6.dp)
                 ) {
                     VryvAvatarStack(
                         avatars = listOf(R.drawable.av1, R.drawable.av2, R.drawable.av3),
-                        size = 24.dp
+                        size = 26.dp
                     )
                     Text(
-                        text = "${event.goingCount} идут · 4 друга",
-                        color = Color(0xFFC8C8D4),
+                        text = "+${(event.goingCount - 3).coerceAtLeast(128)}",
+                        color = VryvTextPrimary,
                         fontFamily = InterFontFamily,
-                        fontSize = 12.sp,
-                        fontWeight = FontWeight.Medium
+                        fontSize = 13.sp,
+                        fontWeight = FontWeight.Bold
                     )
                 }
-
-                Text(
-                    text = event.priceString,
-                    color = if (event.priceByn == 0.0) VryvLime else VryvTextPrimary,
-                    fontFamily = InterFontFamily,
-                    fontSize = 20.sp,
-                    fontWeight = FontWeight.Bold,
-                    letterSpacing = (-0.4).sp
-                )
             }
         }
     }
 }
 
+/**
+ * Portrait card used in the "Для тебя" horizontal carousel (Screenshots 1 & 2):
+ * 158dp × 200dp image with top-left dark date pill, plus Title and Price/Distance below image.
+ */
 @Composable
 fun EventCardFeatured(
     event: VryvEvent,
     onClick: () -> Unit,
-    onSaveToggle: () -> Unit,
+    onSaveToggle: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
-    Box(
+    Column(
         modifier = modifier
-            .width(228.dp)
-            .height(268.dp)
-            .clip(RoundedCornerShape(24.dp))
-            .background(VryvCard)
-            .border(1.dp, VryvLine, RoundedCornerShape(24.dp))
+            .width(158.dp)
             .clickable { onClick() }
             .testTag("event_featured_${event.id}")
+    ) {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(200.dp)
+                .clip(RoundedCornerShape(20.dp))
+                .background(VryvCard)
+                .border(1.dp, VryvLine, RoundedCornerShape(20.dp))
+        ) {
+            Image(
+                painter = painterResource(id = event.coverRes),
+                contentDescription = event.title,
+                contentScale = ContentScale.Crop,
+                modifier = Modifier.fillMaxSize()
+            )
+
+            // Top-left dark translucent date/time pill ("Пт · 20:00", "Сб · 19:30", "До 25 окт")
+            Box(
+                modifier = Modifier
+                    .align(Alignment.TopStart)
+                    .padding(10.dp)
+                    .height(26.dp)
+                    .clip(RoundedCornerShape(13.dp))
+                    .background(Color(0xA60B0B0F))
+                    .border(1.dp, Color(0x1FFFFFFF), RoundedCornerShape(13.dp))
+                    .padding(horizontal = 10.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = event.pillTimeText,
+                    color = VryvTextPrimary,
+                    fontFamily = InterFontFamily,
+                    fontSize = 11.5.sp,
+                    fontWeight = FontWeight.SemiBold
+                )
+            }
+        }
+
+        Spacer(modifier = Modifier.height(10.dp))
+
+        Text(
+            text = event.title,
+            color = VryvTextPrimary,
+            fontFamily = InterFontFamily,
+            fontSize = 15.sp,
+            fontWeight = FontWeight.Bold,
+            letterSpacing = (-0.3).sp,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis
+        )
+
+        Spacer(modifier = Modifier.height(3.dp))
+
+        val subText = if (event.priceByn == 0.0) {
+            "Бесплатно"
+        } else {
+            "${event.priceString} · ${event.distanceText}"
+        }
+
+        Text(
+            text = subText,
+            color = VryvTextMuted,
+            fontFamily = InterFontFamily,
+            fontSize = 13.sp,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis
+        )
+    }
+}
+
+/**
+ * Horizontal compact card used in "Прямо сейчас" section (Screenshot 2):
+ * 84dp square rounded photo on left + title + "До 23:00 · 600 м" + dark tags ("Еда", "0 BYN").
+ */
+@Composable
+fun EventCardLiveRow(
+    event: VryvEvent,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Row(
+        modifier = modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(20.dp))
+            .background(VryvCard)
+            .border(1.dp, VryvLine, RoundedCornerShape(20.dp))
+            .clickable { onClick() }
+            .padding(12.dp),
+        verticalAlignment = Alignment.CenterVertically
     ) {
         Image(
             painter = painterResource(id = event.coverRes),
             contentDescription = event.title,
             contentScale = ContentScale.Crop,
-            modifier = Modifier.fillMaxSize()
+            modifier = Modifier
+                .size(84.dp)
+                .clip(RoundedCornerShape(16.dp))
         )
 
-        // Gradient overlay matching prototype
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(
-                    Brush.verticalGradient(
-                        0.0f to Color(0x0D0B0B0F),
-                        0.45f to Color(0x400B0B0F),
-                        0.85f to Color(0xF00B0B0F),
-                        1.0f to VryvBg
-                    )
-                )
-        )
+        Spacer(modifier = Modifier.width(14.dp))
 
-        // Top row: Tag + Bookmark button
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .align(Alignment.TopCenter)
-                .padding(12.dp),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.Top
-        ) {
-            VryvTag(
-                text = if (event.priceByn == 0.0) "Бесплатно" else (event.genres.firstOrNull() ?: "Событие"),
-                style = if (event.priceByn == 0.0) VryvTagStyle.LIME else VryvTagStyle.DARK
-            )
-
-            Box(
-                modifier = Modifier
-                    .size(38.dp)
-                    .clip(CircleShape)
-                    .background(if (event.isBookmarked) VryvPink else Color(0x7014141A))
-                    .border(1.dp, Color(0x24FFFFFF), CircleShape)
-                    .clickable { onSaveToggle() }
-                    .testTag("bookmark_${event.id}"),
-                contentAlignment = Alignment.Center
-            ) {
-                Icon(
-                    imageVector = VryvIcons.Save,
-                    contentDescription = "Сохранить",
-                    tint = Color.White,
-                    modifier = Modifier.size(18.dp)
-                )
-            }
-        }
-
-        // Bottom info
-        Column(
-            modifier = Modifier
-                .align(Alignment.BottomStart)
-                .fillMaxWidth()
-                .padding(14.dp)
-        ) {
+        Column(modifier = Modifier.weight(1f)) {
             Text(
                 text = event.title,
                 color = VryvTextPrimary,
                 fontFamily = InterFontFamily,
-                fontSize = 17.sp,
+                fontSize = 16.sp,
                 fontWeight = FontWeight.Bold,
                 letterSpacing = (-0.3).sp,
-                lineHeight = 20.sp,
-                maxLines = 2,
+                maxLines = 1,
                 overflow = TextOverflow.Ellipsis
             )
 
             Spacer(modifier = Modifier.height(4.dp))
 
             Text(
-                text = "${event.dateDisplay}, ${event.timeDisplay} · ${event.venueName}",
-                color = Color(0xFFC8C8D2),
+                text = "${event.pillTimeText} · ${event.distanceText}",
+                color = VryvTextMuted,
                 fontFamily = InterFontFamily,
-                fontSize = 12.5.sp,
+                fontSize = 13.sp,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
             )
 
             Spacer(modifier = Modifier.height(10.dp))
 
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
+            Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                val primaryTag = event.genres.firstOrNull() ?: "Еда"
+                val priceTag = if (event.priceByn == 0.0) "0 BYN" else event.priceString
+
+                listOf(primaryTag, priceTag).forEach { tagText ->
+                    Box(
+                        modifier = Modifier
+                            .height(24.dp)
+                            .clip(RoundedCornerShape(12.dp))
+                            .background(Color(0xFF26262E))
+                            .padding(horizontal = 10.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = tagText,
+                            color = VryvTextPrimary,
+                            fontFamily = InterFontFamily,
+                            fontSize = 11.5.sp,
+                            fontWeight = FontWeight.SemiBold
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+
+/**
+ * Wide landscape card used in "На выходных" horizontal carousel (Screenshot 2):
+ * 238dp × 140dp image with top-left dark date pill, plus Title and Venue · Price below image.
+ */
+@Composable
+fun EventCardWide(
+    event: VryvEvent,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Column(
+        modifier = modifier
+            .width(238.dp)
+            .clickable { onClick() }
+    ) {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(140.dp)
+                .clip(RoundedCornerShape(20.dp))
+                .background(VryvCard)
+                .border(1.dp, VryvLine, RoundedCornerShape(20.dp))
+        ) {
+            Image(
+                painter = painterResource(id = event.coverRes),
+                contentDescription = event.title,
+                contentScale = ContentScale.Crop,
+                modifier = Modifier.fillMaxSize()
+            )
+
+            Box(
+                modifier = Modifier
+                    .align(Alignment.TopStart)
+                    .padding(10.dp)
+                    .height(26.dp)
+                    .clip(RoundedCornerShape(13.dp))
+                    .background(Color(0xA60B0B0F))
+                    .border(1.dp, Color(0x1FFFFFFF), RoundedCornerShape(13.dp))
+                    .padding(horizontal = 10.dp),
+                contentAlignment = Alignment.Center
             ) {
                 Text(
-                    text = event.priceString,
-                    color = if (event.priceByn == 0.0) VryvLime else VryvTextPrimary,
+                    text = event.pillTimeText,
+                    color = VryvTextPrimary,
                     fontFamily = InterFontFamily,
-                    fontSize = 15.sp,
-                    fontWeight = FontWeight.Bold
-                )
-                Text(
-                    text = "${event.goingCount} идут",
-                    color = VryvTextMuted,
-                    fontFamily = InterFontFamily,
-                    fontSize = 11.5.sp
+                    fontSize = 11.5.sp,
+                    fontWeight = FontWeight.SemiBold
                 )
             }
         }
+
+        Spacer(modifier = Modifier.height(10.dp))
+
+        Text(
+            text = event.title,
+            color = VryvTextPrimary,
+            fontFamily = InterFontFamily,
+            fontSize = 15.sp,
+            fontWeight = FontWeight.Bold,
+            letterSpacing = (-0.3).sp,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis
+        )
+
+        Spacer(modifier = Modifier.height(3.dp))
+
+        Text(
+            text = "${event.venueName} · ${event.priceString}",
+            color = VryvTextMuted,
+            fontFamily = InterFontFamily,
+            fontSize = 13.sp,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis
+        )
     }
 }
 
@@ -376,7 +511,7 @@ fun EventCardGrid(
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
-                    imageVector = VryvIcons.Save,
+                    imageVector = VryvIcons.Heart,
                     contentDescription = null,
                     tint = Color.White,
                     modifier = Modifier.size(15.dp)

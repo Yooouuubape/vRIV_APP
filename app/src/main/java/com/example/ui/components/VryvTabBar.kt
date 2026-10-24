@@ -36,8 +36,8 @@ import com.example.ui.theme.VryvPink
 
 enum class UserTab(val label: String, val icon: ImageVector, val tag: String) {
     FEED("Афиша", VryvIcons.Home, "tab_feed"),
-    SWIPES("Свайпы", VryvIcons.Spark, "tab_swipes"),
-    MAP("Карта", VryvIcons.Pin, "tab_map"),
+    SWIPES("Свайпы", VryvIcons.Cards, "tab_swipes"),
+    MAP("Карта", VryvIcons.Map, "tab_map"),
     COMPANY("Компания", VryvIcons.Users, "tab_company"),
     PROFILE("Профиль", VryvIcons.User, "tab_profile")
 }
@@ -84,13 +84,13 @@ fun VryvUserTabBar(
         ) {
             UserTab.values().forEach { tab ->
                 val isSelected = tab == selectedTab
-                val tint = if (isSelected) VryvPink else Color(0xFF7C7C8A)
+                val tint = if (isSelected) VryvPink else Color(0xFF9696A3)
                 Column(
                     modifier = Modifier
-                        .width(66.dp)
+                        .width(68.dp)
                         .height(54.dp)
                         .clip(RoundedCornerShape(27.dp))
-                        .background(if (isSelected) Color(0x0FFFFFFF) else Color.Transparent)
+                        .background(if (isSelected) Color(0xFF28202D) else Color.Transparent)
                         .clickable { onTabSelected(tab) }
                         .testTag(tab.tag),
                     horizontalAlignment = Alignment.CenterHorizontally,
@@ -100,7 +100,7 @@ fun VryvUserTabBar(
                         imageVector = tab.icon,
                         contentDescription = tab.label,
                         tint = tint,
-                        modifier = Modifier.size(22.dp)
+                        modifier = Modifier.size(23.dp)
                     )
                     Text(
                         text = tab.label,

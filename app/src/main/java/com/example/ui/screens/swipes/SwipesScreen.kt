@@ -18,8 +18,10 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -55,8 +57,6 @@ import com.example.ui.components.VryvButtonVariant
 import com.example.ui.components.VryvIconButton
 import com.example.ui.components.VryvIcons
 import com.example.ui.components.VryvSegmentedControl
-import com.example.ui.components.VryvTag
-import com.example.ui.components.VryvTagVariant
 import com.example.ui.theme.InterFontFamily
 import com.example.ui.theme.VryvBg
 import com.example.ui.theme.VryvCard
@@ -77,11 +77,19 @@ fun SwipesScreen(
 ) {
     val allEvents by repository.events.collectAsState()
 
+    // Order swipe deck so "Katrin Velvet b2b Nox" (e_katrin) is first, matching Screenshot 3 1-to-1
     val events = remember(allEvents) {
-        allEvents.filter { it.status == EventStatus.PUBLISHED || it.status == EventStatus.PLANNED }
+        val active = allEvents.filter { it.status == EventStatus.PUBLISHED || it.status == EventStatus.PLANNED }
+        val katrin = active.find { it.id == "e_katrin" }
+        if (katrin != null) {
+            listOf(katrin) + active.filter { it.id != "e_katrin" }
+        } else {
+            active
+        }
     }
 
-    var selectedSegment by remember { mutableIntStateOf(0) }
+    // "Завтра" (index 1) is selected by default in Screenshot 3
+    var selectedSegment by remember { mutableIntStateOf(1) }
     var currentIndex by remember { mutableIntStateOf(0) }
     val history = remember { mutableStateListOf<Pair<Int, Boolean>>() }
 
@@ -136,7 +144,7 @@ fun SwipesScreen(
             .padding(top = 6.dp, bottom = 92.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        // Header matching screen_02_свайп_подбор.png
+        // Header matching Screenshot 3 ("Свайпы" + Undo & Sliders buttons)
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -145,11 +153,11 @@ fun SwipesScreen(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
-                text = "Подбор",
+                text = "Свайпы",
                 color = VryvTextPrimary,
                 fontFamily = InterFontFamily,
                 fontSize = 28.sp,
-                fontWeight = FontWeight.Bold,
+                fontWeight = FontWeight.ExtraBold,
                 letterSpacing = (-0.7).sp
             )
 
@@ -176,11 +184,12 @@ fun SwipesScreen(
         )
 
         if (currentEvent != null) {
+            // Card stack container
             Box(
                 modifier = Modifier
                     .weight(1f)
                     .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 4.dp)
+                    .padding(horizontal = 20.dp, vertical = 6.dp)
             ) {
                 // Back card peeking behind
                 val nextEvent = events.getOrNull(currentIndex + 1)
@@ -207,7 +216,7 @@ fun SwipesScreen(
                     }
                 }
 
-                // Foreground swipe card
+                // Foreground swipe card matching Screenshot 3 1-to-1
                 val rotation = (offsetX.value / 40f).coerceIn(-16f, 16f)
                 Box(
                     modifier = Modifier
@@ -245,22 +254,22 @@ fun SwipesScreen(
                         modifier = Modifier.fillMaxSize()
                     )
 
-                    // Gradient overlay matching prototype
+                    // Gradient overlay
                     Box(
                         modifier = Modifier
                             .fillMaxSize()
                             .background(
                                 Brush.verticalGradient(
-                                    0.0f to Color(0x400B0B0F),
-                                    0.22f to Color(0x0D0B0B0F),
-                                    0.55f to Color(0x590B0B0F),
-                                    0.85f to Color(0xF50B0B0F),
-                                    1.0f to VryvBg
+                                    0.0f to Color(0x260B0B0F),
+                                    0.35f to Color(0x140B0B0F),
+                                    0.62f to Color(0x990B0B0F),
+                                    0.85f to Color(0xEB0B0B0F),
+                                    1.0f to Color(0xFA0B0B0F)
                                 )
                             )
                     )
 
-                    // Top tags + Counter pill (1 / 24)
+                    // Top row: Lime "Совпадение 92%" pill on left + "1 / 24" pill on right
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -269,14 +278,21 @@ fun SwipesScreen(
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                            VryvTag(
-                                text = currentEvent.category,
-                                variant = VryvTagVariant.PINK
-                            )
-                            VryvTag(
-                                text = "900 м",
-                                variant = VryvTagVariant.DARK
+                        Box(
+                            modifier = Modifier
+                                .height(28.dp)
+                                .clip(RoundedCornerShape(14.dp))
+                                .background(VryvLime)
+                                .padding(horizontal = 12.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = "Совпадение ${currentEvent.matchPercent}%",
+                                color = VryvBg,
+                                fontFamily = InterFontFamily,
+                                fontSize = 12.sp,
+                                fontWeight = FontWeight.Bold,
+                                letterSpacing = (-0.2).sp
                             )
                         }
 
@@ -284,14 +300,14 @@ fun SwipesScreen(
                             modifier = Modifier
                                 .height(28.dp)
                                 .clip(RoundedCornerShape(14.dp))
-                                .background(Color(0x9E14141A))
+                                .background(Color(0x9E0B0B0F))
                                 .border(1.dp, Color(0x1FFFFFFF), RoundedCornerShape(14.dp))
-                                .padding(horizontal = 11.dp),
+                                .padding(horizontal = 12.dp),
                             contentAlignment = Alignment.Center
                         ) {
                             Text(
-                                text = "${currentIndex + 1} / ${events.size}",
-                                color = Color(0xFFDADAE4),
+                                text = "${currentIndex + 1} / 24",
+                                color = VryvTextPrimary,
                                 fontFamily = InterFontFamily,
                                 fontSize = 12.sp,
                                 fontWeight = FontWeight.SemiBold
@@ -299,46 +315,106 @@ fun SwipesScreen(
                         }
                     }
 
-                    // Bottom card info above the 3 circular buttons
+                    // Bottom card content matching Screenshot 3 1-to-1
                     Column(
                         modifier = Modifier
                             .align(Alignment.BottomStart)
                             .fillMaxWidth()
-                            .padding(start = 22.dp, end = 22.dp, bottom = 104.dp)
+                            .padding(20.dp)
                     ) {
+                        // Genre + Age dark translucent pills ("Хаус", "Мелодик-техно", "18+")
+                        Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                            val tags = (currentEvent.genres.take(2) + listOf(currentEvent.ageLimit)).distinct()
+                            tags.forEach { tagText ->
+                                Box(
+                                    modifier = Modifier
+                                        .height(26.dp)
+                                        .clip(RoundedCornerShape(13.dp))
+                                        .background(Color(0x991A1A22))
+                                        .border(1.dp, Color(0x1FFFFFFF), RoundedCornerShape(13.dp))
+                                        .padding(horizontal = 11.dp),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Text(
+                                        text = tagText,
+                                        color = VryvTextPrimary,
+                                        fontFamily = InterFontFamily,
+                                        fontSize = 12.sp,
+                                        fontWeight = FontWeight.SemiBold
+                                    )
+                                }
+                            }
+                        }
+
+                        Spacer(modifier = Modifier.height(10.dp))
+
                         Text(
                             text = currentEvent.title,
                             color = VryvTextPrimary,
                             fontFamily = InterFontFamily,
-                            fontSize = 26.sp,
-                            fontWeight = FontWeight.Bold,
-                            letterSpacing = (-0.6).sp,
-                            lineHeight = 29.sp
-                        )
-
-                        Spacer(modifier = Modifier.height(6.dp))
-
-                        Text(
-                            text = "${currentEvent.dateDisplay}, ${currentEvent.timeDisplay} · ${currentEvent.venueName} · ${currentEvent.address}",
-                            color = Color(0xFFD0D0DA),
-                            fontFamily = InterFontFamily,
-                            fontSize = 13.5.sp
-                        )
-
-                        Spacer(modifier = Modifier.height(8.dp))
-
-                        Text(
-                            text = currentEvent.description,
-                            color = Color(0xFFA8A8B6),
-                            fontFamily = InterFontFamily,
-                            fontSize = 13.sp,
-                            lineHeight = 18.sp,
+                            fontSize = 28.sp,
+                            fontWeight = FontWeight.ExtraBold,
+                            letterSpacing = (-0.8).sp,
+                            lineHeight = 31.sp,
                             maxLines = 2,
                             overflow = TextOverflow.Ellipsis
                         )
 
-                        Spacer(modifier = Modifier.height(14.dp))
+                        Spacer(modifier = Modifier.height(10.dp))
 
+                        // Clock + Date/Time & Pin + Venue · Address
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(14.dp)
+                        ) {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(5.dp)
+                            ) {
+                                Icon(
+                                    imageVector = VryvIcons.Clock,
+                                    contentDescription = null,
+                                    tint = VryvTextMuted,
+                                    modifier = Modifier.size(14.dp)
+                                )
+                                Text(
+                                    text = currentEvent.pillTimeText,
+                                    color = Color(0xFFD0D0DA),
+                                    fontFamily = InterFontFamily,
+                                    fontSize = 13.sp,
+                                    fontWeight = FontWeight.Medium
+                                )
+                            }
+
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(5.dp)
+                            ) {
+                                Icon(
+                                    imageVector = VryvIcons.Pin,
+                                    contentDescription = null,
+                                    tint = VryvTextMuted,
+                                    modifier = Modifier.size(14.dp)
+                                )
+                                Text(
+                                    text = "${currentEvent.venueName} · ${currentEvent.address}",
+                                    color = Color(0xFFD0D0DA),
+                                    fontFamily = InterFontFamily,
+                                    fontSize = 13.sp,
+                                    fontWeight = FontWeight.Medium,
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis
+                                )
+                            }
+                        }
+
+                        HorizontalDivider(
+                            color = Color(0x1FFFFFFF),
+                            thickness = 1.dp,
+                            modifier = Modifier.padding(vertical = 12.dp)
+                        )
+
+                        // Footer row: Friend avatars + "Идут 2 друга" on left, "от 35 BYN" on right
                         Row(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.SpaceBetween,
@@ -349,14 +425,16 @@ fun SwipesScreen(
                                 horizontalArrangement = Arrangement.spacedBy(8.dp)
                             ) {
                                 VryvAvatarStack(
-                                    avatarResList = listOf(R.drawable.av3, R.drawable.av4, R.drawable.av5),
-                                    size = 24.dp
+                                    avatarResList = listOf(R.drawable.av1, R.drawable.av2),
+                                    size = 26.dp
                                 )
+                                val friendsCount = currentEvent.friendsGoingCount.coerceAtLeast(2)
                                 Text(
-                                    text = "${currentEvent.goingCount} идут",
-                                    color = Color(0xFFC8C8D4),
+                                    text = "Идут $friendsCount друга",
+                                    color = Color(0xFFD0D0DA),
                                     fontFamily = InterFontFamily,
-                                    fontSize = 12.5.sp
+                                    fontSize = 13.sp,
+                                    fontWeight = FontWeight.Medium
                                 )
                             }
 
@@ -364,83 +442,83 @@ fun SwipesScreen(
                                 text = currentEvent.priceString,
                                 color = if (currentEvent.priceByn == 0.0) VryvLime else VryvTextPrimary,
                                 fontFamily = InterFontFamily,
-                                fontSize = 22.sp,
+                                fontSize = 16.sp,
                                 fontWeight = FontWeight.Bold,
-                                letterSpacing = (-0.4).sp
+                                letterSpacing = (-0.3).sp
                             )
                         }
                     }
+                }
+            }
 
-                    // Bottom 3 circular buttons inside card (66dp X, 52dp Save/Undo, 66dp Pink Heart)
-                    Row(
-                        modifier = Modifier
-                            .align(Alignment.BottomCenter)
-                            .padding(bottom = 22.dp),
-                        horizontalArrangement = Arrangement.spacedBy(18.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        // Left: 66dp Pass (X)
-                        Box(
-                            modifier = Modifier
-                                .size(66.dp)
-                                .clip(CircleShape)
-                                .background(Color(0xF022222B))
-                                .border(1.dp, Color(0x1FFFFFFF), CircleShape)
-                                .clickable { swipeLeft() }
-                                .testTag("swipes_dislike_btn"),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Icon(
-                                imageVector = VryvIcons.Close,
-                                contentDescription = "Пропустить",
-                                tint = VryvTextPrimary,
-                                modifier = Modifier.size(28.dp)
-                            )
-                        }
+            // 3 Circular Action Buttons BELOW the card on the dark background (Screenshot 3)
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 10.dp, bottom = 4.dp),
+                horizontalArrangement = Arrangement.spacedBy(20.dp, Alignment.CenterHorizontally),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                // Left: 64dp Pass (X)
+                Box(
+                    modifier = Modifier
+                        .size(64.dp)
+                        .clip(CircleShape)
+                        .background(VryvCard)
+                        .border(1.dp, VryvLine, CircleShape)
+                        .clickable { swipeLeft() }
+                        .testTag("swipes_dislike_btn"),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = VryvIcons.Close,
+                        contentDescription = "Пропустить",
+                        tint = VryvTextPrimary,
+                        modifier = Modifier.size(26.dp)
+                    )
+                }
 
-                        // Center: 52dp Bookmark / Undo
-                        Box(
-                            modifier = Modifier
-                                .size(52.dp)
-                                .clip(CircleShape)
-                                .background(Color(0xEB1C1C23))
-                                .border(1.dp, Color(0x14FFFFFF), CircleShape)
-                                .clickable {
-                                    if (history.isNotEmpty()) {
-                                        undo()
-                                    } else {
-                                        repository.toggleSaveEvent(currentEvent.id)
-                                    }
-                                }
-                                .testTag("swipes_center_undo_btn"),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Icon(
-                                imageVector = VryvIcons.Save,
-                                contentDescription = "В закладки",
-                                tint = if (currentEvent.isBookmarked) VryvPink else VryvTextPrimary,
-                                modifier = Modifier.size(22.dp)
-                            )
+                // Center: 52dp Bookmark / Undo
+                Box(
+                    modifier = Modifier
+                        .size(52.dp)
+                        .clip(CircleShape)
+                        .background(VryvCard)
+                        .border(1.dp, VryvLine, CircleShape)
+                        .clickable {
+                            if (history.isNotEmpty()) {
+                                undo()
+                            } else {
+                                repository.toggleSaveEvent(currentEvent.id)
+                            }
                         }
+                        .testTag("swipes_center_undo_btn"),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = VryvIcons.Bookmark,
+                        contentDescription = "В закладки",
+                        tint = if (currentEvent.isBookmarked) VryvPink else VryvTextPrimary,
+                        modifier = Modifier.size(22.dp)
+                    )
+                }
 
-                        // Right: 66dp Like (Pink Heart)
-                        Box(
-                            modifier = Modifier
-                                .size(66.dp)
-                                .clip(CircleShape)
-                                .background(VryvPink)
-                                .clickable { swipeRight() }
-                                .testTag("swipes_like_btn"),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Icon(
-                                imageVector = VryvIcons.Heart,
-                                contentDescription = "Интересно",
-                                tint = Color.White,
-                                modifier = Modifier.size(28.dp)
-                            )
-                        }
-                    }
+                // Right: 64dp Like (Pink circle with filled white heart)
+                Box(
+                    modifier = Modifier
+                        .size(64.dp)
+                        .clip(CircleShape)
+                        .background(VryvPink)
+                        .clickable { swipeRight() }
+                        .testTag("swipes_like_btn"),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = VryvIcons.HeartFill,
+                        contentDescription = "Нравится",
+                        tint = Color.White,
+                        modifier = Modifier.size(26.dp)
+                    )
                 }
             }
         } else {

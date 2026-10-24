@@ -100,18 +100,73 @@ object VryvIcons {
                 strokeLineCap = StrokeCap.Round,
                 strokeLineJoin = StrokeJoin.Round
             ) {
-                moveTo(3f, 10.5f)
-                lineTo(12f, 3f)
-                lineTo(21f, 10.5f)
-                verticalLineToRelative(9f)
-                arcTo(1.5f, 1.5f, 0f, false, true, 19.5f, 21f)
-                horizontalLineToRelative(-4.5f)
-                verticalLineToRelative(-6f)
-                horizontalLineToRelative(-6f)
-                verticalLineToRelative(6f)
-                horizontalLineTo(4.5f)
-                arcTo(1.5f, 1.5f, 0f, false, true, 3f, 19.5f)
+                moveTo(3.5f, 10.2f)
+                lineTo(12f, 3.5f)
+                lineTo(20.5f, 10.2f)
+                verticalLineTo(19f)
+                arcTo(1.5f, 1.5f, 0f, false, true, 19f, 20.5f)
+                horizontalLineToRelative(-4.2f)
+                verticalLineToRelative(-5.8f)
+                horizontalLineTo(9.2f)
+                verticalLineToRelative(5.8f)
+                horizontalLineTo(5f)
+                arcTo(1.5f, 1.5f, 0f, false, true, 3.5f, 19f)
                 close()
+            }
+        }
+    }
+
+    val Cards: ImageVector by lazy {
+        strokeIcon("Cards") {
+            path(
+                stroke = SolidColor(Color.White),
+                strokeLineWidth = 1.8f,
+                strokeLineCap = StrokeCap.Round,
+                strokeLineJoin = StrokeJoin.Round
+            ) {
+                // M8.5 3.5h8a3 3 0 0 1 3 3v10
+                moveTo(8.5f, 3.5f)
+                horizontalLineToRelative(8f)
+                arcTo(3f, 3f, 0f, false, true, 19.5f, 6.5f)
+                verticalLineToRelative(10f)
+                // rect x="4.5" y="6.5" width="11.5" height="14" rx="2.6"
+                moveTo(7.1f, 6.5f)
+                horizontalLineTo(13.4f)
+                arcTo(2.6f, 2.6f, 0f, false, true, 16f, 9.1f)
+                verticalLineTo(17.9f)
+                arcTo(2.6f, 2.6f, 0f, false, true, 13.4f, 20.5f)
+                horizontalLineTo(7.1f)
+                arcTo(2.6f, 2.6f, 0f, false, true, 4.5f, 17.9f)
+                verticalLineTo(9.1f)
+                arcTo(2.6f, 2.6f, 0f, false, true, 7.1f, 6.5f)
+                close()
+            }
+        }
+    }
+
+    val Map: ImageVector by lazy {
+        strokeIcon("Map") {
+            path(
+                stroke = SolidColor(Color.White),
+                strokeLineWidth = 1.8f,
+                strokeLineCap = StrokeCap.Round,
+                strokeLineJoin = StrokeJoin.Round
+            ) {
+                // M9 4.2 3.5 6.4v13.4L9 17.6l6 2.2 5.5-2.2V4.2L15 6.4z
+                moveTo(9f, 4.2f)
+                lineTo(3.5f, 6.4f)
+                verticalLineToRelative(13.4f)
+                lineTo(9f, 17.6f)
+                lineToRelative(6f, 2.2f)
+                lineToRelative(5.5f, -2.2f)
+                verticalLineTo(4.2f)
+                lineTo(15f, 6.4f)
+                close()
+                // M9 4.2v13.4M15 6.4v13.4
+                moveTo(9f, 4.2f)
+                verticalLineToRelative(13.4f)
+                moveTo(15f, 6.4f)
+                verticalLineToRelative(13.4f)
             }
         }
     }
@@ -360,12 +415,20 @@ object VryvIcons {
                 strokeLineCap = StrokeCap.Round,
                 strokeLineJoin = StrokeJoin.Round
             ) {
-                moveTo(4f, 7f); horizontalLineToRelative(10f)
-                moveTo(18f, 7f); horizontalLineToRelative(2f)
-                moveTo(14f, 5f); verticalLineToRelative(4f)
-                moveTo(4f, 17f); horizontalLineToRelative(4f)
-                moveTo(12f, 17f); horizontalLineToRelative(8f)
-                moveTo(8f, 15f); verticalLineToRelative(4f)
+                moveTo(4f, 7f); horizontalLineTo(13f)
+                moveTo(18f, 7f); horizontalLineTo(20f)
+                moveTo(4f, 17f); horizontalLineTo(7f)
+                moveTo(11.3f, 17f); horizontalLineTo(20f)
+                // circle cx=15.5, cy=7, r=2.3
+                moveTo(17.8f, 7f)
+                arcTo(2.3f, 2.3f, 0f, true, true, 13.2f, 7f)
+                arcTo(2.3f, 2.3f, 0f, true, true, 17.8f, 7f)
+                close()
+                // circle cx=9, cy=17, r=2.3
+                moveTo(11.3f, 17f)
+                arcTo(2.3f, 2.3f, 0f, true, true, 6.7f, 17f)
+                arcTo(2.3f, 2.3f, 0f, true, true, 11.3f, 17f)
+                close()
             }
         }
     }
