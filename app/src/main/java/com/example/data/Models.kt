@@ -1,6 +1,7 @@
 package com.example.data
 
 import androidx.annotation.DrawableRes
+import com.example.R
 
 enum class EventStatus(val label: String) {
     DRAFT("Черновик"),
@@ -21,6 +22,13 @@ enum class VenueApplicationStatus(val label: String) {
     REJECTED("Отклонено")
 }
 
+object NotificationType {
+    const val COMPANY_INVITE = "invite"
+    const val FRIEND_REQUEST = "friend"
+    const val EVENT_REMINDER = "group"
+    const val EVENT_CHANGED = "event_change"
+}
+
 data class VryvUser(
     val id: String = "u_max",
     val name: String = "Максим Салуков",
@@ -30,6 +38,7 @@ data class VryvUser(
     @DrawableRes val avatarRes: Int,
     val bio: String = "Техно по пятницам, стендап по средам. Ищу компанию на Warehouse.",
     val city: String = "Минск",
+    val age: Int = 24,
     val budget: String = "До 50 BYN",
     val interests: List<String> = listOf("Техно", "Хаус", "Стендап", "Бары", "Концерты"),
     val formatOfRest: List<String> = listOf("С друзьями", "Новые знакомства", "Спонтанные события"),
@@ -49,6 +58,9 @@ data class VryvUser(
 
     val preferredFormats: List<String>
         get() = formatOfRest
+
+    val attendedCount: Int
+        get() = visitedCount
 }
 
 data class VryvEvent(
@@ -91,6 +103,12 @@ data class VryvEvent(
 
     val pillTimeText: String
         get() = shortDatePill.ifBlank { "${dateDisplay.substringBefore(",")} · ${timeDisplay.substringBefore(" ")}" }
+
+    val venueAddress: String
+        get() = address
+
+    val distanceKm: String
+        get() = distanceText
 }
 
 data class GroupApplication(
@@ -115,6 +133,8 @@ data class CompanyGroup(
     val isOpen: Boolean,
     val creatorId: String = "u_max",
     val creatorName: String = "Максим",
+    val eventVenue: String = "Re:Public",
+    val tags: List<String> = listOf("Техно", "Хаус", "23–30 лет"),
     val isUserJoined: Boolean = false,
     val isUserPending: Boolean = false,
     val isUserCreator: Boolean = false,
@@ -122,7 +142,19 @@ data class CompanyGroup(
     val memberIds: List<String> = emptyList(),
     val pendingApplications: List<GroupApplication> = emptyList(),
     val chatMessages: List<ChatMessage> = emptyList()
-)
+) {
+    val currentMembers: Int
+        get() = currentMembersCount
+
+    val isJoined: Boolean
+        get() = isUserJoined
+
+    val isRequested: Boolean
+        get() = isUserPending
+
+    val messages: List<ChatMessage>
+        get() = chatMessages
+}
 
 data class CompanionUser(
     val id: String,
@@ -131,11 +163,22 @@ data class CompanionUser(
     @DrawableRes val avatarRes: Int,
     val bio: String,
     val sharedTags: List<String>,
+    val age: Int = 24,
+    val city: String = "Минск",
+    val friendsCount: Int = 86,
+    val mutualEvents: Int = 4,
+    val statusText: String = "",
+    val isRequest: Boolean = false,
     val isRequestSent: Boolean = false,
     val isBlocked: Boolean = false,
     val isFriend: Boolean = false,
     val isOnline: Boolean = true
-)
+) {
+    val interests: List<String>
+        get() = sharedTags
+}
+
+typealias UserProfile = CompanionUser
 
 data class ChatMessage(
     val id: String,
@@ -143,7 +186,8 @@ data class ChatMessage(
     val senderName: String,
     val text: String,
     val time: String,
-    val isMe: Boolean
+    val isMe: Boolean,
+    @DrawableRes val senderAvatarRes: Int = R.drawable.av1
 )
 
 data class DirectDialog(
@@ -153,7 +197,27 @@ data class DirectDialog(
     val time: String,
     val unreadCount: Int = 0,
     val messages: List<ChatMessage> = emptyList()
-)
+) {
+    val userId: String
+        get() = otherUser.id
+
+    val userName: String
+        get() = otherUser.name
+
+    val userHandle: String
+        get() = "@${otherUser.username.removePrefix("@")}"
+
+    val userAvatarRes: Int
+        get() = otherUser.avatarRes
+
+    val lastTime: String
+        get() = time
+
+    val isBlocked: Boolean
+        get() = otherUser.isBlocked
+}
+
+typealias DirectChatThread = DirectDialog
 
 data class FriendInvite(
     val id: String,
@@ -202,7 +266,9 @@ data class BusinessVenue(
     val isVerified: Boolean = true,
     val phone: String = "+375 (29) 613-13-13",
     val telegram: String = "@loft13minsk",
-    val schedule: String = "Пн–Чт 18:00–02:00, Пт–Сб 18:00–06:00, Вс 18:00–03:00"
+    val schedule: String = "Пн–Чт 18:00–02:00, Пт–Сб 18:00–06:00, Вс 18:00–03:00",
+    @DrawableRes val coverRes: Int = R.drawable.rooftop,
+    val genres: List<String> = listOf("Техно", "Хаус", "Коктейли")
 )
 
 data class VenueApplication(

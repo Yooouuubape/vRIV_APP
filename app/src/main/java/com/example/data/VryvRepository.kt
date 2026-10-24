@@ -15,6 +15,7 @@ class VryvRepository private constructor() {
     // Multi-user database of accounts
     private val _allUsers = MutableStateFlow(MockDataProvider.getDemoUsers())
     val allUsers: StateFlow<List<VryvUser>> = _allUsers.asStateFlow()
+    val registeredUsers: StateFlow<List<VryvUser>> get() = allUsers
 
     private val _currentUser = MutableStateFlow(MockDataProvider.getInitialUser())
     val currentUser: StateFlow<VryvUser> = _currentUser.asStateFlow()
@@ -36,9 +37,14 @@ class VryvRepository private constructor() {
 
     private val _groups = MutableStateFlow(MockDataProvider.getInitialGroups())
     val groups: StateFlow<List<CompanyGroup>> = _groups.asStateFlow()
+    val companyGroups: StateFlow<List<CompanyGroup>> get() = groups
 
     private val _companions = MutableStateFlow(MockDataProvider.getInitialCompanionUsers())
     val companions: StateFlow<List<CompanionUser>> = _companions.asStateFlow()
+    val soloUsers: StateFlow<List<CompanionUser>> get() = companions
+    val friends: StateFlow<List<CompanionUser>> get() = companions
+
+    fun inviteSoloUser(userId: String) = toggleCompanionRequest(userId)
 
     fun toggleCompanionRequest(companionId: String) {
         if (_isGuest.value || !_isLoggedIn.value) {
@@ -59,12 +65,51 @@ class VryvRepository private constructor() {
 
     private val _directDialogs = MutableStateFlow(MockDataProvider.getInitialDirectDialogs(_companions.value))
     val directDialogs: StateFlow<List<DirectDialog>> = _directDialogs.asStateFlow()
+    val directThreads: StateFlow<List<DirectDialog>> get() = directDialogs
 
     private val _notifications = MutableStateFlow(MockDataProvider.getInitialNotifications())
     val notifications: StateFlow<List<NotificationItem>> = _notifications.asStateFlow()
 
     private val _businessVenue = MutableStateFlow(BusinessVenue())
     val businessVenue: StateFlow<BusinessVenue> = _businessVenue.asStateFlow()
+
+    private val _allVenues = MutableStateFlow(
+        listOf(
+            BusinessVenue(
+                id = "v_loft13",
+                name = "Loft 13",
+                category = "Бар · Немига",
+                address = "ул. Зыбицкая, 6",
+                coverRes = R.drawable.rooftop,
+                genres = listOf("Хаус", "Коктейли", "Лаунж")
+            ),
+            BusinessVenue(
+                id = "v_republic",
+                name = "Re:Public",
+                category = "Клуб · Притыцкого",
+                address = "ул. Притыцкого, 62",
+                coverRes = R.drawable.techno,
+                genres = listOf("Техно", "Концерты", "Рок")
+            ),
+            BusinessVenue(
+                id = "v_hide",
+                name = "Hide",
+                category = "Клуб · Октябрьская",
+                address = "ул. Октябрьская, 19",
+                coverRes = R.drawable.concert,
+                genres = listOf("Техно", "Андеграунд", "Электроника")
+            ),
+            BusinessVenue(
+                id = "v_karma",
+                name = "Karma Bar",
+                category = "Бар · Октябрьская",
+                address = "ул. Октябрьская, 16",
+                coverRes = R.drawable.jazz,
+                genres = listOf("Бары", "Коктейли", "Вайб")
+            )
+        )
+    )
+    val allVenues: StateFlow<List<BusinessVenue>> = _allVenues.asStateFlow()
 
     private val _venueApplications = MutableStateFlow<List<VenueApplication>>(emptyList())
     val venueApplications: StateFlow<List<VenueApplication>> = _venueApplications.asStateFlow()
@@ -708,7 +753,7 @@ class VryvRepository private constructor() {
         )
         _directDialogs.update { list ->
             list.map { d ->
-                if (d.id == dialogId) {
+                if (d.id == dialogId || d.otherUser.id == dialogId) {
                     d.copy(
                         lastMessage = text.trim(),
                         time = "Только что",
@@ -718,6 +763,28 @@ class VryvRepository private constructor() {
                 } else d
             }
         }
+    }
+
+    fun toggleBlockDirectUser(userId: String) {
+        var nowBlocked = false
+        _companions.update { list ->
+            list.map { u ->
+                if (u.id == userId || "dm_${u.id.removePrefix("u_")}" == userId) {
+                    nowBlocked = !u.isBlocked
+                    u.copy(isBlocked = nowBlocked)
+                } else u
+            }
+        }
+        _directDialogs.update { list ->
+            list.map { d ->
+                if (d.id == userId || d.otherUser.id == userId) {
+                    val b = !d.otherUser.isBlocked
+                    nowBlocked = b
+                    d.copy(otherUser = d.otherUser.copy(isBlocked = b))
+                } else d
+            }
+        }
+        showToast(if (nowBlocked) "Пользователь заблокирован" else "Пользователь разблокирован")
     }
 
     // --- Friend Invitations ---
@@ -864,6 +931,28 @@ class VryvRepository private constructor() {
         }
         showToast("Все уведомления прочитаны")
     }
+
+    fun respondToNotification(notificationId: String, accept: Boolean) = respondToInvite(notificationId, accept)
+
+    fun toggleBookmark(eventId: String) = toggleSaveEvent(eventId)
+
+    fun acceptFriendRequest(userId: String) {
+        _companions.update { list ->
+            list.map { if (it.id == userId) it.copy(isFriend = true, isRequest = false) else it }
+        }
+        showToast("Заявка в друзья принята")
+    }
+
+    fun declineFriendRequest(userId: String) {
+        _companions.update { list ->
+            list.map { if (it.id == userId) it.copy(isRequest = false) else it }
+        }
+        showToast("Заявка отклонена")
+    }
+
+    fun switchDemoAccount(userId: String) = switchAccount(userId)
+
+    fun deleteCurrentAccount() = logout()
 
     fun resetToDefaults() {
         _allUsers.value = MockDataProvider.getDemoUsers()

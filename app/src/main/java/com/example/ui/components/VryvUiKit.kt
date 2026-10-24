@@ -1064,9 +1064,14 @@ object VryvIcons {
     val ChevronDown: ImageVector get() = ChevDown
     val ChevronRight: ImageVector get() = ChevRight
     val Save: ImageVector get() = Bookmark
+    val BookmarkFilled: ImageVector get() = BookmarkFill
     val Calendar: ImageVector get() = Cal
     val Msg: ImageVector get() = Chat
+    val Message: ImageVector get() = Chat
     val Flame: ImageVector get() = Spark
+    val Phone: ImageVector get() = Globe
+    val Logout: ImageVector get() = Share
+    val Trash: ImageVector get() = Close
 }
 
 /**
@@ -1147,6 +1152,7 @@ enum class VryvButtonVariant {
     DANGER,     // #FF4D67, white text
     DISABLED,   // #2A2A33, #6C6C78 text
     PrimaryPink,
+    Secondary,
     SecondaryDark,
     PrimaryLime,
     Ghost,
@@ -1175,7 +1181,7 @@ fun VryvButton(
     val effectiveVariant = if (!enabled) VryvButtonVariant.DISABLED else style
     val bgColor = when (effectiveVariant) {
         VryvButtonVariant.PRIMARY, VryvButtonVariant.PrimaryPink -> VryvPink
-        VryvButtonVariant.SECONDARY, VryvButtonVariant.SecondaryDark -> VryvCardElevated
+        VryvButtonVariant.SECONDARY, VryvButtonVariant.Secondary, VryvButtonVariant.SecondaryDark -> VryvCardElevated
         VryvButtonVariant.WHITE -> VryvTextPrimary
         VryvButtonVariant.LIME, VryvButtonVariant.PrimaryLime -> VryvLime
         VryvButtonVariant.GHOST, VryvButtonVariant.Ghost -> Color.Transparent
@@ -1184,7 +1190,7 @@ fun VryvButton(
     }
     val textColor = when (effectiveVariant) {
         VryvButtonVariant.PRIMARY, VryvButtonVariant.PrimaryPink -> Color.White
-        VryvButtonVariant.SECONDARY, VryvButtonVariant.SecondaryDark -> VryvTextPrimary
+        VryvButtonVariant.SECONDARY, VryvButtonVariant.Secondary, VryvButtonVariant.SecondaryDark -> VryvTextPrimary
         VryvButtonVariant.WHITE -> VryvBg
         VryvButtonVariant.LIME, VryvButtonVariant.PrimaryLime -> VryvBg
         VryvButtonVariant.GHOST, VryvButtonVariant.Ghost -> VryvTextSecondary
@@ -1542,6 +1548,7 @@ fun VryvChip(
     activeTextColor: Color = Color.White,
     leadingDotColor: Color? = null,
     trailingChevron: Boolean = false,
+    trailingContent: (@Composable () -> Unit)? = null,
     testTag: String? = null
 ) {
     val height = if (isBig) 44.dp else 34.dp
@@ -1579,7 +1586,9 @@ fun VryvChip(
                 fontWeight = FontWeight.SemiBold,
                 letterSpacing = (-0.15).sp
             )
-            if (trailingChevron) {
+            if (trailingContent != null) {
+                trailingContent()
+            } else if (trailingChevron) {
                 Icon(
                     imageVector = VryvIcons.ChevDown,
                     contentDescription = null,
@@ -1596,10 +1605,12 @@ enum class VryvTagVariant {
     LIME,
     DARK,
     OUTLINE,
+    NEUTRAL,
     Pink,
     Lime,
     Dark,
-    Outline
+    Outline,
+    Neutral
 }
 
 typealias VryvTagStyle = VryvTagVariant
@@ -1618,13 +1629,13 @@ fun VryvTag(
     val bgColor = when (style) {
         VryvTagVariant.PINK, VryvTagVariant.Pink -> VryvPink
         VryvTagVariant.LIME, VryvTagVariant.Lime -> VryvLime
-        VryvTagVariant.DARK, VryvTagVariant.Dark -> Color(0xA816161C)
+        VryvTagVariant.DARK, VryvTagVariant.Dark, VryvTagVariant.NEUTRAL, VryvTagVariant.Neutral -> Color(0xA816161C)
         VryvTagVariant.OUTLINE, VryvTagVariant.Outline -> Color(0x14FFFFFF)
     }
     val textColor = when (style) {
         VryvTagVariant.PINK, VryvTagVariant.Pink -> Color.White
         VryvTagVariant.LIME, VryvTagVariant.Lime -> Color(0xFF0B0B0F)
-        VryvTagVariant.DARK, VryvTagVariant.Dark -> VryvTextPrimary
+        VryvTagVariant.DARK, VryvTagVariant.Dark, VryvTagVariant.NEUTRAL, VryvTagVariant.Neutral -> VryvTextPrimary
         VryvTagVariant.OUTLINE, VryvTagVariant.Outline -> VryvTextPrimary
     }
     Box(
@@ -1822,12 +1833,17 @@ fun VryvGroupRow(
     iconTint: Color = VryvTextPrimary,
     titleColor: Color = VryvTextPrimary,
     rightValue: String? = null,
+    trailingValue: String? = rightValue,
+    trailingColor: Color = VryvTextSecondary,
+    isDanger: Boolean = false,
     showChevron: Boolean = true,
     toggleState: Boolean? = null,
     onToggleChange: ((Boolean) -> Unit)? = null,
     showDivider: Boolean = true,
     onClick: (() -> Unit)? = null
 ) {
+    val effectiveTitleColor = if (isDanger) VryvPink else titleColor
+    val effectiveRightValue = trailingValue ?: rightValue
     Column(modifier = modifier.fillMaxWidth()) {
         Row(
             modifier = Modifier
@@ -1842,7 +1858,7 @@ fun VryvGroupRow(
                     modifier = Modifier
                         .size(34.dp)
                         .clip(RoundedCornerShape(10.dp))
-                        .background(VryvIconTileBg),
+                        .background(if (isDanger) Color(0x2EFF1D8E) else VryvIconTileBg),
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
@@ -1858,7 +1874,7 @@ fun VryvGroupRow(
             Column(modifier = Modifier.weight(1f)) {
                 Text(
                     text = title,
-                    color = titleColor,
+                    color = effectiveTitleColor,
                     fontFamily = InterFontFamily,
                     fontSize = 15.5.sp,
                     fontWeight = FontWeight.Medium,
@@ -1876,10 +1892,10 @@ fun VryvGroupRow(
                 }
             }
 
-            if (rightValue != null) {
+            if (effectiveRightValue != null) {
                 Text(
-                    text = rightValue,
-                    color = VryvTextSecondary,
+                    text = effectiveRightValue,
+                    color = trailingColor,
                     fontFamily = InterFontFamily,
                     fontSize = 14.sp,
                     fontWeight = FontWeight.Medium,

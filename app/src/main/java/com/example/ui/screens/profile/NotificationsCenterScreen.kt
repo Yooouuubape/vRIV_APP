@@ -7,7 +7,6 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -16,10 +15,11 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -39,23 +39,24 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.R
-import com.example.data.NotificationItem
+import com.example.data.NotificationType
 import com.example.data.VryvRepository
+import com.example.ui.components.VryvAvatarStack
 import com.example.ui.components.VryvButton
 import com.example.ui.components.VryvButtonStyle
 import com.example.ui.components.VryvFloatingBottomSheet
+import com.example.ui.components.VryvGroupList
 import com.example.ui.components.VryvIcons
 import com.example.ui.components.VryvSubScreenHeader
+import com.example.ui.theme.InterFontFamily
 import com.example.ui.theme.VryvBg
 import com.example.ui.theme.VryvCard
 import com.example.ui.theme.VryvCardElevated
 import com.example.ui.theme.VryvLime
 import com.example.ui.theme.VryvLine
 import com.example.ui.theme.VryvPink
-import com.example.ui.theme.VryvTextMuted
 import com.example.ui.theme.VryvTextPrimary
 import com.example.ui.theme.VryvTextSecondary
-import com.example.ui.theme.VryvWarning
 
 @Composable
 fun NotificationsCenterScreen(
@@ -65,108 +66,482 @@ fun NotificationsCenterScreen(
     modifier: Modifier = Modifier
 ) {
     val notifications by repository.notifications.collectAsState()
-    var selectedNotifForInvite by remember { mutableStateOf<NotificationItem?>(null) }
+    var showIncomingInviteSheet by remember { mutableStateOf(false) }
+
+    val inviteNotif = notifications.firstOrNull { it.type == NotificationType.COMPANY_INVITE }
+    val friendNotif = notifications.firstOrNull { it.type == NotificationType.FRIEND_REQUEST }
+    val reminderNotif = notifications.firstOrNull { it.type == NotificationType.EVENT_REMINDER }
+    val changeNotif = notifications.firstOrNull { it.type == NotificationType.EVENT_CHANGED }
 
     Column(
         modifier = modifier
             .fillMaxSize()
             .background(VryvBg)
     ) {
-        // Top Header matching notifCenter.png
+        // Header matching notifCenter.png 1-to-1
         VryvSubScreenHeader(
             title = "Уведомления",
             onBackClick = onBackClick,
             rightContent = {
-                if (notifications.any { !it.isRead }) {
-                    Box(
-                        modifier = Modifier
-                            .clip(RoundedCornerShape(10.dp))
-                            .clickable { repository.markAllNotificationsRead() }
-                            .padding(horizontal = 8.dp, vertical = 6.dp)
-                            .testTag("mark_all_read_button")
-                    ) {
-                        Text(
-                            text = "Прочитать все",
-                            color = VryvPink,
-                            fontSize = 13.sp,
-                            fontWeight = FontWeight.Bold
-                        )
-                    }
-                }
+                Text(
+                    text = "Прочитать всё",
+                    color = VryvPink,
+                    fontFamily = InterFontFamily,
+                    fontSize = 13.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    modifier = Modifier
+                        .clickable { repository.markAllNotificationsRead() }
+                        .testTag("mark_all_read_button")
+                )
             }
         )
 
-        if (notifications.isEmpty()) {
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(32.dp),
-                contentAlignment = Alignment.Center
-            ) {
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Icon(
-                        imageVector = VryvIcons.Bell,
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .verticalScroll(rememberScrollState())
+                .padding(horizontal = 20.dp)
+        ) {
+            Spacer(modifier = Modifier.height(8.dp))
+
+            // 1. Приглашения · 2 (matching notifCenter.png)
+            Text(
+                text = "Приглашения · 2",
+                color = VryvTextPrimary,
+                fontFamily = InterFontFamily,
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.padding(bottom = 8.dp)
+            )
+            VryvGroupList {
+                // Row 1: Алина зовёт в компанию «Идём на Techno Room»
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable { showIncomingInviteSheet = true }
+                        .padding(horizontal = 16.dp, vertical = 14.dp)
+                        .testTag("notification_item_${inviteNotif?.id ?: "n_1"}"),
+                    verticalAlignment = Alignment.Top
+                ) {
+                    Image(
+                        painter = painterResource(id = R.drawable.av1),
                         contentDescription = null,
-                        tint = VryvTextMuted,
-                        modifier = Modifier.size(54.dp)
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier
+                            .size(46.dp)
+                            .clip(CircleShape)
                     )
-                    Spacer(modifier = Modifier.height(14.dp))
-                    Text(
-                        text = "Нет новых уведомлений",
-                        color = VryvTextPrimary,
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.Bold
-                    )
-                }
-            }
-        } else {
-            LazyColumn(
-                modifier = Modifier.fillMaxSize(),
-                contentPadding = PaddingValues(horizontal = 20.dp, vertical = 10.dp),
-                verticalArrangement = Arrangement.spacedBy(10.dp)
-            ) {
-                item {
-                    Text(
-                        text = "СЕГОДНЯ",
-                        color = VryvTextSecondary,
-                        fontSize = 11.sp,
-                        fontWeight = FontWeight.Bold,
-                        letterSpacing = 0.8.sp,
-                        modifier = Modifier.padding(start = 4.dp, bottom = 2.dp)
-                    )
-                }
-                items(notifications) { notif ->
-                    NotificationRowItem(
-                        item = notif,
-                        onClick = {
-                            if (notif.type == "invite") {
-                                selectedNotifForInvite = notif
-                            } else if (notif.relatedEventId != null) {
-                                onEventClick(notif.relatedEventId)
+                    Spacer(modifier = Modifier.width(12.dp))
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            text = "Алина зовёт в компанию «Идём на Techno Room»",
+                            color = VryvTextPrimary,
+                            fontFamily = InterFontFamily,
+                            fontSize = 14.5.sp,
+                            fontWeight = FontWeight.SemiBold,
+                            lineHeight = 19.sp
+                        )
+                        Spacer(modifier = Modifier.height(2.dp))
+                        Text(
+                            text = "Сегодня · 23:00 · 2 друга идут",
+                            color = VryvTextSecondary,
+                            fontFamily = InterFontFamily,
+                            fontSize = 12.5.sp
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                            Box(
+                                modifier = Modifier
+                                    .height(34.dp)
+                                    .clip(RoundedCornerShape(999.dp))
+                                    .background(VryvPink)
+                                    .clickable {
+                                        if (inviteNotif != null) repository.respondToNotification(inviteNotif.id, true)
+                                        repository.showToast("Вы присоединились к компании Алины!")
+                                    }
+                                    .padding(horizontal = 14.dp),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text("Пойду", color = Color.White, fontSize = 12.5.sp, fontWeight = FontWeight.Bold)
                             }
+                            Box(
+                                modifier = Modifier
+                                    .height(34.dp)
+                                    .clip(RoundedCornerShape(999.dp))
+                                    .background(VryvCardElevated)
+                                    .border(1.dp, VryvLine, RoundedCornerShape(999.dp))
+                                    .clickable {
+                                        if (inviteNotif != null) repository.respondToNotification(inviteNotif.id, false)
+                                        repository.showToast("Приглашение отклонено")
+                                    }
+                                    .padding(horizontal = 14.dp),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text("Не смогу", color = VryvTextPrimary, fontSize = 12.5.sp, fontWeight = FontWeight.SemiBold)
+                            }
+                        }
+                    }
+                }
+
+                HorizontalDivider(color = VryvLine, thickness = 1.dp)
+
+                // Row 2: Вика позвала в компанию «Идём на Techno Room»
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable { showIncomingInviteSheet = true }
+                        .padding(horizontal = 16.dp, vertical = 13.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Image(
+                        painter = painterResource(id = R.drawable.av5),
+                        contentDescription = null,
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier
+                            .size(46.dp)
+                            .clip(CircleShape)
+                    )
+                    Spacer(modifier = Modifier.width(12.dp))
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            text = "Вика позвала в компанию «Идём на Techno Room»",
+                            color = VryvTextPrimary,
+                            fontFamily = InterFontFamily,
+                            fontSize = 14.5.sp,
+                            fontWeight = FontWeight.SemiBold,
+                            lineHeight = 19.sp
+                        )
+                        Text(
+                            text = "Открытая · 3 из 5 мест",
+                            color = VryvTextSecondary,
+                            fontFamily = InterFontFamily,
+                            fontSize = 12.5.sp
+                        )
+                    }
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        text = "Вступить",
+                        color = VryvPink,
+                        fontFamily = InterFontFamily,
+                        fontSize = 13.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        modifier = Modifier.clickable {
+                            repository.showToast("Вы вступили в компанию")
                         }
                     )
                 }
             }
-        }
-    }
 
-    // Sheet for Incoming Invitation (invIn.png)
-    if (selectedNotifForInvite != null) {
-        val notif = selectedNotifForInvite!!
-        VryvFloatingBottomSheet(
-            onDismiss = { selectedNotifForInvite = null }
-        ) {
-            Column(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // 2. Сообщения
+            Text(
+                text = "Сообщения",
+                color = VryvTextPrimary,
+                fontFamily = InterFontFamily,
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.padding(bottom = 8.dp)
+            )
+            VryvGroupList {
                 Row(
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable { repository.showToast("Открываем диалог с Димой") }
+                        .padding(horizontal = 16.dp, vertical = 13.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Image(
-                        painter = painterResource(id = R.drawable.av2),
+                        painter = painterResource(id = R.drawable.av4),
+                        contentDescription = null,
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier
+                            .size(46.dp)
+                            .clip(CircleShape)
+                    )
+                    Spacer(modifier = Modifier.width(12.dp))
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            text = "Дима",
+                            color = VryvTextPrimary,
+                            fontFamily = InterFontFamily,
+                            fontSize = 15.sp,
+                            fontWeight = FontWeight.SemiBold
+                        )
+                        Text(
+                            text = "Передал тебе билет, проверь",
+                            color = VryvTextSecondary,
+                            fontFamily = InterFontFamily,
+                            fontSize = 13.sp
+                        )
+                    }
+                    Box(
+                        modifier = Modifier
+                            .size(8.dp)
+                            .clip(CircleShape)
+                            .background(VryvPink)
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // 3. Заявки в друзья
+            Text(
+                text = "Заявки в друзья",
+                color = VryvTextPrimary,
+                fontFamily = InterFontFamily,
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.padding(bottom = 8.dp)
+            )
+            VryvGroupList {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 13.dp)
+                        .testTag("notification_item_${friendNotif?.id ?: "n_2"}"),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Image(
+                        painter = painterResource(id = R.drawable.av3),
+                        contentDescription = null,
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier
+                            .size(46.dp)
+                            .clip(CircleShape)
+                    )
+                    Spacer(modifier = Modifier.width(12.dp))
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            text = "Катя · @katya.ink",
+                            color = VryvTextPrimary,
+                            fontFamily = InterFontFamily,
+                            fontSize = 14.5.sp,
+                            fontWeight = FontWeight.SemiBold
+                        )
+                        Text(
+                            text = "12 общих друзей",
+                            color = VryvTextSecondary,
+                            fontFamily = InterFontFamily,
+                            fontSize = 12.5.sp
+                        )
+                    }
+                    Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                        Box(
+                            modifier = Modifier
+                                .height(34.dp)
+                                .clip(RoundedCornerShape(999.dp))
+                                .background(VryvCardElevated)
+                                .border(1.dp, VryvLine, RoundedCornerShape(999.dp))
+                                .clickable {
+                                    if (friendNotif != null) repository.respondToNotification(friendNotif.id, false)
+                                    repository.showToast("Заявка отклонена")
+                                }
+                                .padding(horizontal = 12.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text("Отклонить", color = VryvTextPrimary, fontSize = 12.sp, fontWeight = FontWeight.SemiBold)
+                        }
+                        Box(
+                            modifier = Modifier
+                                .height(34.dp)
+                                .clip(RoundedCornerShape(999.dp))
+                                .background(VryvPink)
+                                .clickable {
+                                    if (friendNotif != null) repository.respondToNotification(friendNotif.id, true)
+                                    repository.showToast("Катя добавлена в друзья!")
+                                }
+                                .padding(horizontal = 12.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text("Принять", color = Color.White, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                        }
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // 4. Напоминания
+            Text(
+                text = "Напоминания",
+                color = VryvTextPrimary,
+                fontFamily = InterFontFamily,
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.padding(bottom = 8.dp)
+            )
+            VryvGroupList {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable { onEventClick("e_techno") }
+                        .padding(horizontal = 16.dp, vertical = 13.dp)
+                        .testTag("notification_item_${reminderNotif?.id ?: "n_4"}"),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .size(34.dp)
+                            .clip(RoundedCornerShape(10.dp))
+                            .background(VryvCardElevated),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            imageVector = VryvIcons.Clock,
+                            contentDescription = null,
+                            tint = VryvTextPrimary,
+                            modifier = Modifier.size(18.dp)
+                        )
+                    }
+                    Spacer(modifier = Modifier.width(12.dp))
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            text = "Techno Room: Ночь 3 · сегодня 23:00",
+                            color = VryvTextPrimary,
+                            fontFamily = InterFontFamily,
+                            fontSize = 14.5.sp,
+                            fontWeight = FontWeight.SemiBold
+                        )
+                        Text(
+                            text = "Через 3 часа · Re:Public",
+                            color = VryvTextSecondary,
+                            fontFamily = InterFontFamily,
+                            fontSize = 12.5.sp
+                        )
+                    }
+                    Icon(
+                        imageVector = VryvIcons.ChevronRight,
+                        contentDescription = null,
+                        tint = VryvTextSecondary,
+                        modifier = Modifier.size(18.dp)
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // 5. Изменения мероприятий
+            Text(
+                text = "Изменения мероприятий",
+                color = VryvTextPrimary,
+                fontFamily = InterFontFamily,
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.padding(bottom = 8.dp)
+            )
+            VryvGroupList {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable { onEventClick("e_rooftop") }
+                        .padding(horizontal = 16.dp, vertical = 13.dp)
+                        .testTag("notification_item_${changeNotif?.id ?: "n_3"}"),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .size(34.dp)
+                            .clip(RoundedCornerShape(10.dp))
+                            .background(Color(0x2EFF1D8E)),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            imageVector = VryvIcons.Alert,
+                            contentDescription = null,
+                            tint = VryvPink,
+                            modifier = Modifier.size(18.dp)
+                        )
+                    }
+                    Spacer(modifier = Modifier.width(12.dp))
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            text = "«Северный Свет» перенесено",
+                            color = VryvTextPrimary,
+                            fontFamily = InterFontFamily,
+                            fontSize = 14.5.sp,
+                            fontWeight = FontWeight.SemiBold
+                        )
+                        Text(
+                            text = "Новая дата: Сб 24 · 22:00",
+                            color = VryvTextSecondary,
+                            fontFamily = InterFontFamily,
+                            fontSize = 12.5.sp
+                        )
+                    }
+                    Icon(
+                        imageVector = VryvIcons.ChevronRight,
+                        contentDescription = null,
+                        tint = VryvTextSecondary,
+                        modifier = Modifier.size(18.dp)
+                    )
+                }
+
+                HorizontalDivider(color = VryvLine, thickness = 1.dp)
+
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable { onEventClick("e_rooftop") }
+                        .padding(horizontal = 16.dp, vertical = 13.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .size(34.dp)
+                            .clip(RoundedCornerShape(10.dp))
+                            .background(Color(0x2EFF1D8E)),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            imageVector = VryvIcons.Alert,
+                            contentDescription = null,
+                            tint = VryvPink,
+                            modifier = Modifier.size(18.dp)
+                        )
+                    }
+                    Spacer(modifier = Modifier.width(12.dp))
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            text = "«Rooftop Sunset Party» отменено",
+                            color = VryvTextPrimary,
+                            fontFamily = InterFontFamily,
+                            fontSize = 14.5.sp,
+                            fontWeight = FontWeight.SemiBold
+                        )
+                        Text(
+                            text = "План удалён из календаря",
+                            color = VryvTextSecondary,
+                            fontFamily = InterFontFamily,
+                            fontSize = 12.5.sp
+                        )
+                    }
+                    Icon(
+                        imageVector = VryvIcons.ChevronRight,
+                        contentDescription = null,
+                        tint = VryvTextSecondary,
+                        modifier = Modifier.size(18.dp)
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(32.dp))
+        }
+    }
+
+    // Incoming Invite Bottom Sheet matching invIn.png 1-to-1
+    if (showIncomingInviteSheet) {
+        VryvFloatingBottomSheet(
+            onDismiss = { showIncomingInviteSheet = false }
+        ) {
+            Column(modifier = Modifier.fillMaxWidth()) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.padding(bottom = 12.dp)
+                ) {
+                    Image(
+                        painter = painterResource(id = R.drawable.av1),
                         contentDescription = null,
                         contentScale = ContentScale.Crop,
                         modifier = Modifier
@@ -176,149 +551,93 @@ fun NotificationsCenterScreen(
                     Spacer(modifier = Modifier.width(12.dp))
                     Column {
                         Text(
-                            text = "Илья Кравцов приглашает вас",
+                            text = "Алина зовёт тебя",
                             color = VryvTextPrimary,
-                            fontSize = 15.sp,
+                            fontFamily = InterFontFamily,
+                            fontSize = 16.sp,
                             fontWeight = FontWeight.Bold
                         )
                         Text(
-                            text = "«Го сегодня на RAVE в Modul!»",
+                            text = "@alina.tech · только что",
                             color = VryvTextSecondary,
-                            fontSize = 13.sp
-                        )
-                    }
-                }
-
-                Spacer(modifier = Modifier.height(14.dp))
-
-                // Event preview card inside invIn sheet
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clip(RoundedCornerShape(16.dp))
-                        .background(VryvCardElevated)
-                        .border(1.dp, VryvLine, RoundedCornerShape(16.dp))
-                        .padding(10.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Image(
-                        painter = painterResource(id = R.drawable.techno),
-                        contentDescription = null,
-                        contentScale = ContentScale.Crop,
-                        modifier = Modifier
-                            .size(56.dp)
-                            .clip(RoundedCornerShape(12.dp))
-                    )
-                    Spacer(modifier = Modifier.width(12.dp))
-                    Column(modifier = Modifier.weight(1f)) {
-                        Text(
-                            text = notif.title,
-                            color = VryvTextPrimary,
-                            fontSize = 15.sp,
-                            fontWeight = FontWeight.Bold
-                        )
-                        Spacer(modifier = Modifier.height(2.dp))
-                        Text(
-                            text = notif.subtitle,
-                            color = VryvTextSecondary,
+                            fontFamily = InterFontFamily,
                             fontSize = 12.sp
                         )
                     }
                 }
 
-                Spacer(modifier = Modifier.height(18.dp))
-
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(10.dp)
+                // Event preview card inside invIn.png
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(170.dp)
+                        .clip(RoundedCornerShape(22.dp))
                 ) {
-                    VryvButton(
-                        text = "Не смогу",
-                        style = VryvButtonStyle.SecondaryDark,
-                        modifier = Modifier.weight(1f),
-                        onClick = {
-                            repository.respondToInvite(notif.id, accept = false)
-                            selectedNotifForInvite = null
-                        }
+                    Image(
+                        painter = painterResource(id = R.drawable.techno),
+                        contentDescription = null,
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier.fillMaxSize()
                     )
-                    VryvButton(
-                        text = "Пойду!",
-                        style = VryvButtonStyle.PrimaryPink,
-                        modifier = Modifier.weight(1f),
-                        onClick = {
-                            repository.respondToInvite(notif.id, accept = true)
-                            selectedNotifForInvite = null
-                        }
-                    )
-                }
-            }
-        }
-    }
-}
-
-@Composable
-fun NotificationRowItem(
-    item: NotificationItem,
-    onClick: () -> Unit
-) {
-    val (icon, tint) = when (item.type) {
-        "invite" -> VryvIcons.Flame to VryvPink
-        "message" -> VryvIcons.Msg to VryvLime
-        "group" -> VryvIcons.Users to VryvPink
-        "event_change" -> VryvIcons.Clock to VryvWarning
-        else -> VryvIcons.Check to VryvLime
-    }
-
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(18.dp))
-            .background(if (item.isRead) VryvCard else VryvCardElevated)
-            .border(
-                width = 1.dp,
-                color = if (item.isRead) VryvLine else VryvPink.copy(alpha = 0.35f),
-                shape = RoundedCornerShape(18.dp)
-            )
-            .clickable { onClick() }
-            .padding(14.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Box(
-            modifier = Modifier
-                .size(42.dp)
-                .clip(RoundedCornerShape(13.dp))
-                .background(tint.copy(alpha = 0.15f)),
-            contentAlignment = Alignment.Center
-        ) {
-            Icon(imageVector = icon, contentDescription = null, tint = tint, modifier = Modifier.size(20.dp))
-        }
-
-        Spacer(modifier = Modifier.width(12.dp))
-
-        Column(modifier = Modifier.weight(1f)) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(
-                    text = item.title,
-                    color = VryvTextPrimary,
-                    fontSize = 14.5.sp,
-                    fontWeight = FontWeight.Bold,
-                    modifier = Modifier.weight(1f, fill = false)
-                )
-                if (!item.isRead) {
-                    Spacer(modifier = Modifier.width(6.dp))
                     Box(
                         modifier = Modifier
-                            .size(7.dp)
-                            .clip(CircleShape)
-                            .background(VryvPink)
+                            .fillMaxSize()
+                            .background(Color(0x990B0B0F))
+                    )
+                    Column(
+                        modifier = Modifier
+                            .align(Alignment.BottomStart)
+                            .padding(14.dp)
+                    ) {
+                        Text(
+                            text = "Techno Room: Ночь 3",
+                            color = Color.White,
+                            fontFamily = InterFontFamily,
+                            fontSize = 19.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                        Text(
+                            text = "Сегодня · 23:00 · Re:Public · 30 BYN",
+                            color = Color(0xFFDCDCE6),
+                            fontFamily = InterFontFamily,
+                            fontSize = 12.5.sp
+                        )
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(12.dp))
+
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    VryvAvatarStack(
+                        avatars = listOf(R.drawable.av1, R.drawable.av4),
+                        avatarSize = 26.dp
+                    )
+                    Spacer(modifier = Modifier.width(10.dp))
+                    Text(
+                        text = "В компании: Алина, Дима · сбор в 22:30 у входа",
+                        color = VryvTextSecondary,
+                        fontFamily = InterFontFamily,
+                        fontSize = 13.sp
                     )
                 }
-            }
-            Spacer(modifier = Modifier.height(2.dp))
-            Text(text = item.subtitle, color = VryvTextSecondary, fontSize = 12.5.sp)
-        }
 
-        Spacer(modifier = Modifier.width(8.dp))
-        Text(text = item.time, color = VryvTextMuted, fontSize = 11.sp)
+                Spacer(modifier = Modifier.height(16.dp))
+
+                VryvButton(
+                    text = "Пойду вместе",
+                    style = VryvButtonStyle.PrimaryPink,
+                    onClick = {
+                        showIncomingInviteSheet = false
+                        repository.showToast("Вы присоединились к компании Алины!")
+                    }
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                VryvButton(
+                    text = "Не смогу",
+                    style = VryvButtonStyle.Secondary,
+                    onClick = { showIncomingInviteSheet = false }
+                )
+            }
+        }
     }
 }
