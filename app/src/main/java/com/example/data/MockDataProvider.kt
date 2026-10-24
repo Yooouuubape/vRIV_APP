@@ -308,7 +308,7 @@ object MockDataProvider {
                 venueId = "v_karma",
                 title = "Фуд-маркет на Октябрьской",
                 description = "Большой уличный маркет локальной еды, винила и крафтовых напитков во дворике на Октябрьской.",
-                coverRes = R.drawable.food,
+                coverRes = R.drawable.streetfood,
                 category = "Бары",
                 genres = listOf("Еда", "Стритфуд"),
                 dateDisplay = "Сегодня, 22 окт",
