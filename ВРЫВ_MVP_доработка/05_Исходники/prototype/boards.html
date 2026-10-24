@@ -1,0 +1,82 @@
+<!doctype html><html lang="ru"><head><meta charset="utf-8"><link rel="stylesheet" href="common.css"><link rel="stylesheet" href="s2.css">
+<style>
+body{background:var(--bg)}
+.device{width:419px;height:878px;border-radius:68px;padding:3px;position:relative;background:linear-gradient(150deg,#55555c 0%,#2a2a2f 18%,#1c1c20 50%,#2c2c31 82%,#4c4c53 100%);box-shadow:0 40px 80px rgba(0,0,0,.55),0 0 0 1px rgba(255,255,255,.04)}
+.bezel{border-radius:65px;background:#000;padding:10px;width:100%;height:100%}
+.scr{width:393px;height:852px;border-radius:55px;overflow:hidden;position:relative;background:var(--bg)}
+.scr img{width:100%;height:100%;display:block}
+.island{position:absolute;top:11px;left:50%;transform:translateX(-50%);width:124px;height:36px;border-radius:18px;background:#000;z-index:5}
+.btnside{position:absolute;width:4px;border-radius:2px;background:linear-gradient(90deg,#2a2a2f,#4a4a50)}
+.stage{position:relative;overflow:hidden;background:var(--bg)}
+.kick{font-size:15px;font-weight:700;color:var(--pink);letter-spacing:.1em;text-transform:uppercase}
+.lbl{font-weight:600;color:var(--text2);font-size:14px;text-align:center;margin-top:16px;line-height:1.3}
+.lbl b{color:var(--text);font-weight:650;display:block}
+.arrow{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;color:var(--text2);flex:none}
+.arrow span{font-size:11px;font-weight:600;text-align:center;line-height:1.25;max-width:100%;padding:0 4px;color:var(--text2)}
+.arrow svg{color:var(--pink)}
+</style></head><body><script src="icons.js"></script><script src="s2-lib.js"></script><script src="s2-auth.js"></script><script src="s2-user.js"></script><script src="s2-biz.js"></script><script src="s2-mvp.js"></script>
+<script>
+const M={};SCREENS.forEach(s=>M[s.id]=s);
+const LEG={event:['out/raw/screen_04.png','Страница события'],swipes:['out/raw/screen_02.png','Свайпы'],homeOld:['out/raw/screen_01.png','Главная']};
+const src=id=>LEG[id]?LEG[id][0]:`out/raw2/${id}.png`;
+const ttl=id=>LEG[id]?LEG[id][1]:M[id].title;
+const dev=(id,scale=1)=>`<div style="width:${419*scale}px;height:${878*scale}px;flex:none"><div class="device" style="transform:scale(${scale});transform-origin:0 0">
+<div class="btnside" style="left:-3px;top:150px;height:30px"></div><div class="btnside" style="left:-3px;top:205px;height:58px"></div><div class="btnside" style="left:-3px;top:275px;height:58px"></div><div class="btnside" style="right:-3px;top:230px;height:92px"></div>
+<div class="bezel"><div class="scr"><img src="${src(id)}"><div class="island"></div></div></div></div></div>`;
+const head=(k,t,s)=>`<div style="position:absolute;top:56px;left:72px;right:72px;display:flex;justify-content:space-between;align-items:flex-start"><div><div class="kick">${k}</div><div style="font-size:42px;font-weight:750;letter-spacing:-.035em;margin-top:10px">${t}</div>${s?`<div style="font-size:18px;color:var(--text2);margin-top:10px;max-width:1150px;line-height:1.4">${s}</div>`:''}</div><img src="ph/logo.png" style="height:64px"></div>`;
+const short=id=>{const t=ttl(id);return t.replace(/^\d+ · /,'')};
+const num=id=>{const m=ttl(id).match(/^(\d+)/);return m?m[1]:''};
+const q=new URLSearchParams(location.search);
+const SL={
+ cover:()=>`<div class="stage" id="st" style="width:1920px;height:1080px">
+  <div style="position:absolute;top:72px;left:80px"><img src="ph/logo.png" style="height:110px"></div>
+  <div style="position:absolute;top:230px;left:80px;width:640px"><div class="kick">Этап MVP · доработка</div><div style="font-size:60px;font-weight:780;letter-spacing:-.04em;line-height:1.02;margin-top:16px">Пользователь и владелец заведения</div><div style="font-size:20px;color:var(--text2);margin-top:22px;line-height:1.45">В приложении остаются только две роли — пользователь и владелец заведения. Добавлены 26 экранов: компания на мероприятие, чаты, приглашения, карта «Прямо сейчас», поиск, центр уведомлений, статусы мероприятий и жалобы. Администрирование и модерация — на отдельном сайте. Всего 93 экрана.</div>
+  <div style="display:flex;gap:10px;margin-top:30px">${['#0B0B0F','#1A1A20','#FF1D8E','#C7FF28','#F5F5F7','#9696A3'].map(c=>`<div style="width:30px;height:30px;border-radius:15px;background:${c};box-shadow:inset 0 0 0 1px rgba(255,255,255,.12)"></div>`).join('')}</div></div>
+  <div style="position:absolute;top:110px;left:800px;display:flex;gap:30px">${['compSearch','mapNow','d1'].map((id,i)=>`<div style="margin-top:${[80,0,120][i]}px">${dev(id,.8)}</div>`).join('')}</div></div>`,
+};
+const GROUPS=[
+ ['auth1','Авторизация · 1','Приветствие и вход','Только Google и Email ВРЫВ. Гость видит публичную афишу; действия, требующие аккаунта, открывают окно входа.',['splash','welcome','gpick','glink','login','guest']],
+ ['auth2','Авторизация · 2','Регистрация и восстановление','Короткая форма, код на почту, восстановление в три шага с ограничением частоты и сроком действия кода.',['reg','code','codeOk','rec1','rec2','rec3']],
+ ['states1','Состояния форм','Нормальное · ошибка · загрузка · успех','Ошибки показываются у поля после ухода с него; загрузка блокирует повторное нажатие; успех подтверждается без лишних нажатий.',['login','loginErr','loginLoad','regErr','codeErr','rec4']],
+ ['pers','Персонализация','Три шага до своей афиши','Прогресс 1–3 из 3, можно пропустить. Финал показывает реальное число найденных событий, затем открывается персональная главная.',['p1','p2','p3','p4','homeP','filter']],
+ ['user1','Личный профиль · 1','Профиль, сохранённое, друзья','Расширенный профиль в стилистике утверждённого шестого экрана: планы со статусами, коллекции, друзья, приватность планов по умолчанию.',['prof','saved','friends','edit','recs','settings']],
+ ['biz1','Бизнес · 1','Один аккаунт — два режима','Переключение Личный ↔ Бизнес в шторке. Выбор типа бизнеса, заявка на существующее заведение без дублей, пошаговая регистрация. В MVP — одно заведение на владельца.',['sessions','sw','biz','claim','v1','v2']],
+ ['biz2','Бизнес · 2','Подтверждение и кабинет','Верификация с понятными сроками, статусы заявки и компактный обзор кабинета. В MVP — одно заведение на владельца.',['v3','v4','vstat','d1','bnotif','d2']],
+ ['biz3','Бизнес · 3','События, аналитика, сообщения','Пошаговое создание с предпросмотром в ленте, агрегированная аналитика без персональных данных, сообщения без массовых рассылок.',['e1','e2','e3','e4','d4','d5']],
+ ['biz4','Бизнес · 4 и состояния','Настройки и системные состояния','Настройки заведения, пустые состояния, загрузка, офлайн, подтверждения. Управление командой и несколькими заведениями — вне MVP.',['chat','d6','stEmpty','stLoad','stOff','stOk']],
+
+ ['social1','Компания · 1','Поиск и создание','Люди и группы на конкретное мероприятие: открытые группы принимают сразу, закрытые — по заявке. Карточка участника — с общими интересами вместо процентов.',['compSearch','member','compSent','compNew','compPage','compMember']],
+ ['social2','Компания · 2','Чаты и приглашения','Групповой чат со составом, личные диалоги с блокировкой, приглашение друзей и входящие приглашения. Заявка в закрытую группу не открывает чат до решения создателя.',['compChat','compMembers','msgs','lchat','friendsPick','invIn']],
+ ['explore','Карта и поиск','Прямо сейчас и фильтры','Карта событий рядом: кластеры, карточка мероприятия и маршрут. Поиск по названию с фильтрами и центром уведомлений.',['mapNow','mapRoute','search','notifCenter','friends','filter']],
+ ['states2','Статусы мероприятий','Что стало с планами','Отменено, перенесено, завершено и нет мест — с понятными действиями. Жалоба отправляется в приложении, обрабатывается на админ-сайте.',['evCancel','evMoved','evDone','evFull','report','blocked']],
+];
+GROUPS.forEach(([k,kick,t,s,ids])=>SL[k]=()=>`<div class="stage" id="st" style="width:1920px;height:1080px">${head(kick,t,s)}
+ <div style="position:absolute;top:262px;left:72px;right:72px;display:flex;justify-content:space-between">${ids.map((id,i)=>`<div style="margin-top:${i%2?44:0}px;width:${419*.66}px">${dev(id,.66)}<div class="lbl">${num(id)?`<span style="color:var(--pink);font-weight:700">${num(id)}</span> `:''}<b style="display:inline">${short(id).replace(/^.*? · /,m=>m).replace(/(\d+) из (\d+)/g,'$1\u00a0из\u00a0$2')}</b></div></div>`).join('')}</div></div>`);
+const AR=(t)=>`<div class="arrow" style="width:${window.ARW||86}px">${ic('chevR','style="width:30px;height:30px;stroke-width:2.4"')}<span>${t}</span></div>`;
+const flowRow=(steps,scale)=>`<div style="display:flex;align-items:center;justify-content:center">${steps.map((s,i)=>typeof s==='string'?`<div style="width:${419*scale}px">${dev(s,scale)}<div class="lbl" style="font-size:12.5px;margin-top:10px">${short(s).replace(/^\d+ · /,'').replace(/(\d+) из (\d+)/g,'$1\u00a0из\u00a0$2')}</div></div>`:AR(s[0])).join('')}</div>`;
+const FLOWS=[
+ ['fA','Сценарий А','Новый пользователь через Google','Цель — от запуска до персональной афиши меньше чем за минуту и 7 нажатий.',[['welcome',['Продолжить с Google'],'gpick',['Новый аккаунт'],'p1',['5 интересов'],'p2',['До 50 BYN'],'p3',['Готово'],'p4',['Начать'],'homeP']]],
+ ['fB','Сценарий Б','Регистрация через Email','Имя, Email, пароль, город и согласие — затем код на почту и та же персонализация.',[['welcome',['Создать аккаунт'],'reg',['Продолжить'],'code',['Код верный'],'codeOk',['Настроить'],'p1',['3 шага'],'homeP']]],
+ ['fV','Сценарии В и Ж','Возврат пользователя · статус заявки','В: сессия жива — сразу афиша, истекла — вход. Ж (после MVP): несколько заведений. Сейчас кабинет показывает одно заведение владельца.',[['splash',['Сессия активна'],'homeP',['Токен истёк'],'welcome',['Войти по Email'],'login'],['d1',['Вкладка «События»'],'d2',['Статус заявки'],'vstat',['Подтверждено'],'d4']]],
+ ['fG','Сценарий Г','Пользователь становится владельцем','Тот же аккаунт, без повторной регистрации. Заявка проходит проверку, затем открывается кабинет.',[['prof',['ВРЫВ для бизнеса'],'biz',['Добавить заведение'],'v1',['Шаги 2–3'],'v4',['Отправить'],'vstat',['Подтверждено'],'d1']]],
+ ['fD','Сценарии Д и Е','Публикация события · результат','Д: пошаговая форма → предпросмотр в ленте → модерация. Е: карточка события → просмотры, сохранения, «Иду», билеты.',[['d2',['+'],'e1',['Далее'],'e2',['Предпросмотр'],'e3',['Опубликовать'],'e4'],['d1',['События'],'d2',['Статистика'],'d4']]],
+
+ ['fZ','Сценарий З','Найти компанию и пойти вместе','От главной до компании и чата: вкладка «Компания» → открытая группа или карточка участника → страница компании → чат. Закрытая группа — заявка со статусом ожидания.',[['homeP',['Вкладка «Компания»'],'compSearch',['Присоединиться'],'compMember',['Чат компании'],'compChat'],['compSearch',['Тоже ищут компанию'],'member',['Пойти вместе'],'compSent']]],
+];
+FLOWS.forEach(([k,kick,t,s,rows])=>SL[k]=()=>{const n=Math.max(...rows.map(r=>r.filter(x=>typeof x==='string').length));const sc=rows.length>1?.38:Math.min(.6,(1830-(n-1)*96)/(n*419));window.ARW=rows.length>1?96:96;return `<div class="stage" id="st" style="width:1920px;height:1080px">${head(kick,t,s)}<div style="position:absolute;top:${rows.length>1?250:270}px;left:40px;right:40px;display:flex;flex-direction:column;gap:${rows.length>1?36:0}px">${rows.map(r=>flowRow(r,sc)).join('')}</div></div>`});
+window.SLIDES=['cover',...GROUPS.map(g=>g[0]),...FLOWS.map(f=>f[0]),'extra'];
+// Финальный лист презентации (UI-kit) экспортируется не отсюда, а из uikit2.html: render2-скриншот с width=1920 и force-device-scale-factor=2 → 3840×3656.
+SL.extra=()=>`<div class="stage" id="st" style="width:1920px;height:1080px">${head('MVP','Прочие экраны и состояния','Смена Email и пароля, уведомления, конфиденциальность, разрешения, удаление аккаунта, график и адрес заведения, шторки фильтров и сортировки. Модерация и администрирование платформы — на отдельном сайте.')}
+<div style="position:absolute;top:262px;left:56px;right:56px;display:grid;grid-template-columns:repeat(9,1fr);gap:14px 6px;align-items:start">${['filter','mail','mailCode','mailDone','pass','passOk','notif','priv','perms','delacc','delaccOk','sort','vtime','vaddr','bnotif','reportOk','waitOk'].map(id=>`<div style="text-align:center">${dev(id,.4)}<div class="lbl" style="font-size:11px">${short(id)}</div></div>`).join('')}</div></div>`;
+if(q.get('slide')&&SL[q.get('slide')]) document.body.innerHTML=SL[q.get('slide')]();
+const ZM=parseFloat(q.get('scale')||'1');if(ZM!==1)document.body.style.zoom=ZM;
+if(q.get('one')){const id=q.get('one');const s=M[id];
+ document.body.innerHTML=`<div class="stage" id="st" style="width:1600px;height:1000px">
+ <div style="position:absolute;left:110px;top:60px">${dev(id,1)}</div>
+ <div style="position:absolute;left:640px;top:120px;right:90px"><div class="kick">${{auth:'Авторизация',pers:'Персонализация',user:'Личный профиль',biz:'Бизнес',states:'Системные состояния'}[s.group]}</div>
+ <div style="font-size:46px;font-weight:760;letter-spacing:-.035em;margin-top:14px;line-height:1.08">${s.title.replace(/^(\d+) · /,'<span style="color:var(--pink)">$1</span> ')}</div>
+ <div style="font-size:15px;font-weight:700;color:var(--text2);letter-spacing:.08em;text-transform:uppercase;margin-top:44px">Логика взаимодействия</div>
+ <div style="font-size:21px;line-height:1.55;margin-top:14px;color:#D9D9DE">${s.logic}</div>
+ ${s.states?`<div style="font-size:15px;font-weight:700;color:var(--text2);letter-spacing:.08em;text-transform:uppercase;margin-top:36px">Состояния</div><div style="display:flex;gap:10px;margin-top:12px">${s.states.map(x=>`<span class="chip" style="height:36px">${M[x].title.split(' — ')[1]||M[x].title}</span>`).join('')}</div>`:''}
+ </div><img src="ph/logo.png" style="position:absolute;right:80px;bottom:60px;height:54px"></div>`;}
+</script></body></html>

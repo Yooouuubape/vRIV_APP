@@ -1,0 +1,11 @@
+<!doctype html><html lang="ru"><head><meta charset="utf-8"><link rel="stylesheet" href="common.css"><link rel="stylesheet" href="s2.css">
+<style>body{display:flex;flex-wrap:wrap;gap:30px;padding:30px;background:#000;align-items:flex-start}</style></head><body>
+<script src="icons.js"></script><script src="s2-lib.js"></script><script src="s2-auth.js"></script><script src="s2-user.js"></script><script src="s2-biz.js"></script><script src="s2-mvp.js"></script>
+<script>
+const q=new URLSearchParams(location.search);
+const full=q.get('full');
+let h='';for(const s of SCREENS){ if(full&&!s.long) continue; let x=s.html; if(!full){ x=x.replace('class="screen long"','class="screen"'); if(s.long&&x.includes('class="tabbar')&&!x.includes('fade-bottom')) x=x.replace('<div class="tabbar','<div class="fade-bottom"></div><div class="tabbar'); } h+=x;}
+if(q.get('one')){const s=SCREENS.find(v=>v.id===q.get('one'));let x=s.html.replace('class="screen long"','class="screen"');if(s.long&&x.includes('class="tabbar')&&!x.includes('fade-bottom'))x=x.replace('<div class="tabbar','<div class="fade-bottom"></div><div class="tabbar');const k=parseFloat(q.get('scale')||'3');document.body.style.padding='0';document.body.style.display='block';document.body.innerHTML=`<div style="width:${393*k}px;height:${852*k}px;overflow:hidden"><div style="transform:scale(${k});transform-origin:0 0">${x}</div></div>`;}
+else document.body.insertAdjacentHTML('beforeend',h);
+window.IDS=SCREENS.filter(s=>!full||s.long).map(s=>s.id);
+</script></body></html>

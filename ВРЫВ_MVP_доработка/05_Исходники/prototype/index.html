@@ -1,0 +1,65 @@
+<!doctype html><html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ВРЫВ — кликабельный прототип</title>
+<link rel="stylesheet" href="common.css"><link rel="stylesheet" href="s2.css">
+<style>
+html,body{height:100%;background:#060608;overflow:hidden}
+.app{display:grid;grid-template-columns:300px 1fr 380px;height:100vh}
+aside{overflow-y:auto;padding:28px 18px 40px;border-right:1px solid rgba(255,255,255,.06)}
+aside img.lg{height:46px}
+.gt{font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--text2);margin:22px 8px 8px}
+.it{display:block;padding:8px 10px;border-radius:10px;font-size:13.5px;font-weight:550;color:#C9C9D0;cursor:pointer;line-height:1.3}
+.it:hover{background:#141419}.it.on{background:#1A1A20;color:#fff}.it.on:before{content:"";display:inline-block;width:6px;height:6px;border-radius:3px;background:var(--pink);margin-right:8px;vertical-align:2px}
+.it.st{padding-left:24px;font-size:12.5px;color:var(--text2)}
+main{display:flex;align-items:center;justify-content:center;position:relative}
+.device{width:419px;height:878px;border-radius:68px;padding:3px;position:relative;background:linear-gradient(150deg,#55555c 0%,#2a2a2f 18%,#1c1c20 50%,#2c2c31 82%,#4c4c53 100%);box-shadow:0 40px 90px rgba(0,0,0,.6);transform-origin:center}
+.bezel{border-radius:65px;background:#000;padding:10px;width:100%;height:100%}
+.phone{width:393px;height:852px;border-radius:55px;overflow:hidden;position:relative;transform:translateZ(0);background:var(--bg)}
+.scroller{position:absolute;inset:0;overflow-y:auto;overflow-x:hidden;scrollbar-width:none}
+.scroller::-webkit-scrollbar{display:none}
+.island{position:absolute;top:11px;left:50%;transform:translateX(-50%);width:124px;height:36px;border-radius:18px;background:#000;z-index:200;pointer-events:none}
+.phone .screen.long .sb,.phone .screen.long .tabbar,.phone .screen.long .homeind,.phone .screen.long .cta-bar,.phone .screen.long .fab,.phone .screen.long .fade-bottom{position:fixed}
+.phone .screen.long .sb{background:rgba(11,11,15,.92);backdrop-filter:blur(20px)}
+.phone .screen.long .nav{position:fixed;top:54px;background:rgba(11,11,15,.92);backdrop-filter:blur(20px)}
+.phone [data-go]:hover{filter:brightness(1.12)}
+.hot{position:absolute;cursor:pointer;z-index:50}
+.side{padding:40px 32px;overflow-y:auto;border-left:1px solid rgba(255,255,255,.06)}
+.kick{font-size:12px;font-weight:700;color:var(--pink);letter-spacing:.1em;text-transform:uppercase}
+.side h1{font-size:30px;font-weight:760;letter-spacing:-.03em;line-height:1.1;margin-top:10px}
+.side .lg2{font-size:16px;line-height:1.6;color:#D2D2D8;margin-top:18px}
+.side .h{font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--text2);margin-top:28px}
+.side .tips{font-size:13.5px;color:var(--text2);line-height:1.5;margin-top:10px}
+.ctrl{display:flex;gap:8px;margin-top:26px}
+.ctrl button{white-space:nowrap;height:38px;font-size:13px!important;border-radius:20px;border:0;background:#1A1A20;color:var(--text);font:600 14px Inter;padding:0 16px;cursor:pointer}
+.ctrl button.p{background:var(--pink)}
+.phone .screen.long{padding-bottom:140px}
+.hl [data-go]{outline:2px solid rgba(199,255,40,.7);outline-offset:-2px}
+@media (max-width:1100px){.app{grid-template-columns:1fr}aside,.side{display:none}}
+@media (max-width:520px){main{align-items:flex-start}}
+</style></head><body>
+<div class="app"><aside id="nav"><img class="lg" src="ph/logo.png"><div style="font-size:13px;color:var(--text2);margin-top:10px;line-height:1.4">Кликабельный прототип · этап 2. Нажимайте на кнопки внутри iPhone или выбирайте экран в списке.</div><div id="list"></div></aside>
+<main><div class="device" id="dev"><div class="bezel"><div class="phone" id="phone"><div class="scroller" id="sc"></div><div class="island"></div></div></div></div></main>
+<section class="side"><div class="kick" id="kk"></div><h1 id="tt"></h1><div class="lg2" id="lg"></div><div id="sts"></div>
+<div class="ctrl"><button id="back">← Назад</button><button id="hl">Подсветить</button><button class="p" id="restart">С начала</button></div>
+<div class="h">Как пользоваться</div><div class="tips">Розовые и белые кнопки, ссылки, вкладки нижней навигации, карточки и строки списков ведут на следующие экраны. Демонстрационные цифры отмечены «пример данных». Утверждённые экраны первого этапа (событие, свайпы, карта, компания) открываются картинкой.</div></section></div>
+<script src="icons.js"></script><script src="s2-lib.js"></script><script src="s2-auth.js"></script><script src="s2-user.js"></script><script src="s2-biz.js"></script><script src="s2-mvp.js"></script>
+<script>
+const M={};SCREENS.forEach(s=>M[s.id]=s);
+const TABHOT=(on)=>{const ids=['homeP','swipes','mapNow','compSearch','prof'];return ids.map((id,k)=>`<div class="hot" data-go="${id}" style="left:${16+k*72}px;bottom:26px;width:72px;height:64px"></div>`).join('')};
+const LEG={event:['out/raw/screen_04.png','Страница события (этап 1)',`<div class="hot" data-go="homeP" style="left:16px;top:58px;width:44px;height:44px"></div><div class="hot" data-go="stOk" style="left:16px;bottom:34px;width:170px;height:54px"></div><div class="hot" data-go="compSearch" style="right:16px;bottom:34px;width:180px;height:54px"></div>`],
+ swipes:['out/raw/screen_02.png','Свайпы (этап 1)',TABHOT(1)],map:['out/raw/screen_03.png','Карта (этап 1)',TABHOT(2)+`<div class="hot" data-go="filter" style="right:16px;top:58px;width:44px;height:44px"></div>`],company:['out/raw/screen_05.png','Поиск компании (этап 1)',`<div class="hot" data-go="event" style="left:12px;top:58px;width:44px;height:44px"></div>`+TABHOT(3)]};
+const GN={auth:'Авторизация',pers:'Персонализация',user:'Личный профиль',biz:'Бизнес',states:'Системные состояния'};
+let hist=[];
+function list(){let h='',g='';for(const s of SCREENS){if(s.group!==g){g=s.group;h+=`<div class="gt">${GN[g]}</div>`}h+=`<a class="it ${s.state?'st':''}" data-id="${s.id}">${s.title}</a>`}document.getElementById('list').innerHTML=h;
+ document.querySelectorAll('.it').forEach(a=>a.onclick=()=>go(a.dataset.id))}
+function go(id,push=true){const sc=document.getElementById('sc');const cur=location.hash.slice(1);if(push&&cur&&cur!==id)hist.push(cur);
+ if(LEG[id]){sc.innerHTML=`<div class="screen"><img src="${LEG[id][0]}" style="width:100%;height:100%;display:block">${LEG[id][2]}</div>`;setSide('Этап 1 · утверждено',LEG[id][1],'Экран из первого этапа без изменений. Отсюда можно вернуться в новые сценарии через нижнюю навигацию.',null)}
+ else{const s=M[id]||M.splash;sc.innerHTML=s.html;setSide(GN[s.group],s.title,s.logic,s.states);id=s.id}
+ sc.scrollTop=0;history.replaceState(null,'','#'+id);document.querySelectorAll('.it').forEach(a=>a.classList.toggle('on',a.dataset.id===id));
+ sc.querySelectorAll('[data-go]').forEach(el=>el.addEventListener('click',e=>{e.stopPropagation();if(el.dataset.rctx)window.RCTX=el.dataset.rctx;if(el.dataset.go==='back'){const p=hist.pop();go(p||'homeP',false)}else go(el.dataset.go)}));
+ if(id==='splash')setTimeout(()=>{if(location.hash==='#splash')go('welcome')},1600)}
+function setSide(k,t,l,st){kk.textContent=k;tt.textContent=t;lg.textContent=l;sts.innerHTML=st?`<div class="h">Состояния</div><div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px">${st.map(x=>`<button class="chip" style="border:0;cursor:pointer;font:600 13px Inter" onclick="go('${x}')">${M[x].title.split(' — ')[1]||M[x].title}</button>`).join('')}</div>`:''}
+back.onclick=()=>{const p=hist.pop();if(p)go(p,false)};restart.onclick=()=>{hist=[];go('splash')};
+hl.onclick=()=>document.getElementById('phone').classList.toggle('hl');
+function fit(){const d=document.getElementById('dev');const H=window.innerHeight-40,W=document.querySelector('main').clientWidth-20;const s=Math.min(1,H/878,W/419);d.style.transform=`scale(${s})`}
+window.addEventListener('resize',fit);list();fit();go(location.hash.slice(1)||'splash',false);
+</script></body></html>

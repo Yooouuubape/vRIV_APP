@@ -1,0 +1,52 @@
+<!doctype html><html lang="ru"><head><meta charset="utf-8"><link rel="stylesheet" href="common.css"><link rel="stylesheet" href="s2.css">
+<style>body{background:var(--bg)}#st{width:1920px;padding:72px 80px 80px;background:var(--bg)}
+.grid{display:grid;grid-template-columns:repeat(12,1fr);gap:24px;margin-top:28px}
+.panel{background:#121217;border-radius:32px;padding:32px;box-shadow:inset 0 0 0 1px rgba(255,255,255,.05)}
+.pt{font-size:13px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--text2);margin-bottom:22px;display:flex;justify-content:space-between}.pt b{color:var(--pink)}
+.c2{font-size:12px;color:var(--text2);margin-top:8px;font-weight:500}
+</style></head><body><script src="icons.js"></script><script src="s2-lib.js"></script><div id="st"></div><script>
+document.getElementById('st').innerHTML=`
+<div style="display:flex;justify-content:space-between;align-items:flex-end"><div><div style="font-size:15px;font-weight:700;color:var(--pink);letter-spacing:.1em">DESIGN SYSTEM · v1.1 · ДОПОЛНЕНИЕ</div><div style="font-size:60px;font-weight:780;letter-spacing:-.04em;margin-top:10px">Новые компоненты</div><div style="font-size:20px;color:var(--text2);margin-top:10px">Формы, выбор, списки настроек, статусы и бизнес-компоненты. Цвета, шрифт, радиусы и отступы — из UI-kit v1.0</div></div><img src="ph/logo.png" style="height:110px"></div>
+<div class="grid">
+<div class="panel" style="grid-column:span 5"><div class="pt">Поля ввода · 54 · r16 <b>09</b></div>
+${FIELD('Обычное','Email',{ph:true,icon:'mail'})}${FIELD('Фокус','max.kovalev@gmail.com',{icon:'mail',st:'focus'})}${FIELD('Ошибка','••••••',{icon:'lock',st:'err',right:ic('eyeOff'),hint:'Минимум 8 символов, буква и цифра',hst:'err'})}${FIELD('Успех','@max.vryv',{st:'ok',hint:'Свободен',hst:'ok'})}${FIELD('Заблокировано','Минск',{st:'dis',icon:'pin'})}
+<div class="c2" style="margin-top:14px">Подпись 13 / Semibold над полем. Ошибка — розовая обводка 1.5 и текст с иконкой. Успех — лаймовая обводка 55%.</div></div>
+<div class="panel" style="grid-column:span 7"><div class="pt">Кнопки и вход <b>10</b></div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+<div><button class="btn white">${GOOGLE}Продолжить с Google</button><div class="c2">Google · белая, главная на приветствии</div></div>
+<div><button class="btn sec">${ic('mail','style="width:20px;height:20px"')}Войти по Email</button><div class="c2">Email ВРЫВ · вторичная</div></div>
+<div><button class="btn pri"><span class="spin"></span>Входим…</button><div class="c2">Загрузка · спиннер, повторное нажатие заблокировано</div></div>
+<div><button class="btn dis">Продолжить · 1</button><div class="c2">Неактивна · #2A2A33</div></div>
+<div><div style="display:flex;gap:10px;align-items:center"><div class="ibtn" style="background:var(--pink)">${ic('plus','style="stroke-width:2.4"')}</div><span class="t-h3">События</span></div><div class="c2">Кнопка создания · в шапке вкладки «События»</div></div>
+<div><button class="btn ghost">Создать ещё одно</button><div class="c2">Текстовая</div></div></div>
+<div class="pt" style="margin-top:28px">Код подтверждения · 6 ячеек 50×62 <b></b></div>
+<div style="display:flex;gap:40px"><div style="width:340px"><div class="code" style="margin-top:0"><div>4</div><div>8</div><div class="f"><span class="caret" style="height:28px"></span></div><div></div><div></div><div></div></div><div class="c2">Ввод</div></div><div style="width:340px"><div class="code err" style="margin-top:0"><div>4</div><div>8</div><div>1</div><div>9</div><div>0</div><div>2</div></div><div class="c2">Ошибка</div></div></div>
+<div class="code ok" style="margin-top:14px;width:340px"><div>4</div><div>8</div><div>1</div><div>9</div><div>0</div><div>7</div></div><div class="c2">Успех</div></div>
+
+<div class="panel" style="grid-column:span 6"><div class="pt">Выбор <b>11</b></div>
+<div style="display:flex;flex-wrap:wrap;gap:9px">${['Техно','Хаус','Стендап'].map((t,i)=>`<div class="chip big ${i<2?'sel':''}">${i<2?ic('check','style="width:16px;height:16px;stroke-width:2.6"'):''}${t}</div>`).join('')}<div class="chip" style="height:32px;font-size:13.5px">Компактный</div><div class="chip sel" style="height:32px;font-size:13.5px">Выбран</div></div>
+<div class="c2">Чип интереса 44 (онбординг) и 32 (настройки). Выбран — розовый + галочка.</div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:20px"><div class="opt on" style="margin:0"><div style="flex:1"><div>До 50 BYN</div><div class="sub2">Одиночный выбор</div></div><div class="radio on"></div></div><div class="opt" style="margin:0"><div class="oico">${ic('users')}</div><div style="flex:1">С друзьями</div><div class="cbx on">${ic('check')}</div></div></div>
+<div class="c2">Карточка-опция 64 · r20 · выбрано — розовая обводка 1.5</div>
+<div style="display:flex;gap:26px;align-items:center;margin-top:22px"><div class="radio"></div><div class="radio on"></div><div class="cbx"></div><div class="cbx on">${ic('check')}</div><div class="tg"></div><div class="tg on"></div><div style="flex:1"><div class="prog" style="margin:0"><i class="on"></i><i class="on"></i><i></i></div><div class="c2">Прогресс шагов · 4 · r2</div></div></div></div>
+
+<div class="panel" style="grid-column:span 6"><div class="pt">Списки настроек и статусы <b>12</b></div>
+<div class="grp">${LI('mail','Email','max.kovalev@gmail.com')}<div class="li"><div class="lico" style="background:#F5F5F7">${GOOGLE.replace('width="20" height="20"','width="18" height="18"')}</div><span>Google</span><span class="v"><span class="status st-ok" style="height:22px"><i></i>Подключён</span>${ic('chevR')}</span></div>${LI('locate','Учитывать расстояние','',{tg:true})}${LI('logout','Выйти','',{danger:true,chev:false})}</div>
+<div class="c2">Строка 54 · иконка в плитке 34 r10 · разделитель с отступом 62</div>
+<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:18px"><span class="status st-mute">Черновик</span><span class="status st-wait"><i style="background:var(--lime)"></i>На проверке</span><span class="status st-pink"><i></i>Нужны уточнения</span><span class="status st-ok"><i></i>Подтверждено</span><span class="status st-mute" style="text-decoration:line-through">Отклонено</span><span class="status st-pink"><i></i>Собираюсь</span><span class="status st-ok"><i></i>Посетил</span><span class="status st-mute">Отменил</span><span class="demo">пример данных</span></div>
+<div class="c2">Статус 24 · r8 · заливка цвета 12–14%. Метка «пример данных» на всех демо-цифрах.</div></div>
+
+<div class="panel" style="grid-column:span 7"><div class="pt">Бизнес-компоненты <b>13</b></div>
+<div style="display:flex;gap:20px;align-items:flex-start"><div style="width:360px">${BIZHEAD()}<div class="c2" style="margin-top:12px">Шапка заведения · тап открывает выбор заведения</div>
+<div class="kpis" style="margin-top:18px"><div class="kpi"><div class="l">${ic('check')}Нажали «Иду»</div><div class="n">268</div><div class="dl">+31%</div></div><div class="kpi"><div class="l">${ic('users')}Подписчики</div><div class="n">87</div><div class="dl neg">−4%</div></div></div><div class="c2">Метрика · рост — лайм, спад — серый (не красный)</div></div>
+<div style="flex:1"><div style="position:relative;height:80px"><div class="tabbar biztab" style="left:0;right:0;bottom:8px">${[['grid','Обзор'],['calendar','События'],['chart','Аудитория'],['chat','Сообщения'],['gear','Настройки']].map(([i,l],k)=>`<div class="tab ${k===0?'on':''}">${ic(i)}<span>${l}</span></div>`).join('')}</div></div><div class="c2" style="margin-top:0">Таб-бар бизнеса · та же форма, активная вкладка лаймовая — режим отличим сразу</div>
+<div style="margin-top:18px;background:var(--card);border-radius:20px;padding:16px"><div style="display:flex;justify-content:space-between;font-size:13.5px;font-weight:600"><span>Нажали «Иду»</span><span>1 186</span></div><div style="height:8px;border-radius:4px;background:#2A2A33;margin-top:6px"><div style="height:8px;border-radius:4px;background:var(--pink);width:38%"></div></div><div class="c2">Полоса воронки · 8 · r4</div></div></div></div></div>
+
+<div class="panel" style="grid-column:span 5"><div class="pt">Шторки, тосты, пустые <b>14</b></div>
+<div class="toast" style="position:static;box-shadow:none"><div style="width:32px;height:32px;border-radius:50%;background:var(--lime);color:#0B0B0F;display:flex;align-items:center;justify-content:center">${ic('check','style="width:18px;height:18px;stroke-width:2.6"')}</div><div style="flex:1"><div style="font-size:14.5px;font-weight:650">Добавили в планы</div><div class="t-cap" style="font-size:12.5px">напомним за 3 часа</div></div><span class="link" style="font-size:14px">Отменить</span></div>
+<div class="toast" style="position:static;box-shadow:none;margin-top:10px">${ic('wifiOff','style="color:var(--pink)"')}<div style="flex:1"><div style="font-size:14.5px;font-weight:650">Нет соединения</div><div class="t-cap" style="font-size:12.5px">Действия отправим позже</div></div><button class="btn sec sm" style="height:32px;padding:0 12px;font-size:13px">Повторить</button></div>
+<div class="c2">Тост 2,5 с · сверху под Dynamic Island</div>
+<div style="display:flex;gap:16px;margin-top:18px;align-items:center"><div style="width:72px;height:72px;border-radius:24px;background:var(--card);display:flex;align-items:center;justify-content:center;color:var(--pink)">${ic('bookmark','style="width:32px;height:32px"')}</div><div style="flex:1"><div class="skel" style="height:14px;width:70%"></div><div class="skel" style="height:14px;width:45%;margin-top:8px"></div><div class="skel" style="height:56px;margin-top:10px;border-radius:16px"></div></div></div>
+<div class="c2">Пустое состояние · иконка в плитке 72–84 · скелетоны повторяют раскладку</div></div>
+</div>`;
+</script></body></html>
