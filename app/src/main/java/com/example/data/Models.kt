@@ -43,6 +43,12 @@ data class VryvUser(
 ) {
     val isOwner: Boolean
         get() = venueId != null
+
+    val preferredBudget: String
+        get() = budget
+
+    val preferredFormats: List<String>
+        get() = formatOfRest
 }
 
 data class VryvEvent(

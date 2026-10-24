@@ -110,8 +110,10 @@ fun VryvSubScreenHeader(
     modifier: Modifier = Modifier,
     subtitle: String? = null,
     centerTitle: Boolean = subtitle == null,
-    rightAction: (@Composable () -> Unit)? = null
+    rightAction: (@Composable () -> Unit)? = null,
+    rightContent: (@Composable () -> Unit)? = null
 ) {
+    val trailingContent = rightContent ?: rightAction
     Row(
         modifier = modifier
             .fillMaxWidth()
@@ -154,8 +156,8 @@ fun VryvSubScreenHeader(
             }
         }
 
-        if (rightAction != null) {
-            rightAction()
+        if (trailingContent != null) {
+            trailingContent()
         } else if (centerTitle) {
             Spacer(modifier = Modifier.width(40.dp))
         }

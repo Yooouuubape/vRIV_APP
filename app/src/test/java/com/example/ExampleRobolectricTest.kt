@@ -22,6 +22,9 @@ class ExampleRobolectricTest {
   @Test
   fun `verify initial mock data and repository operations`() {
     val repository = com.example.data.VryvRepository.instance
+    val loginResult = repository.login("max.vryv@gmail.com", "TechnoMinsk2026")
+    assert(loginResult.first)
+
     val events = repository.events.value
     assert(events.isNotEmpty())
     

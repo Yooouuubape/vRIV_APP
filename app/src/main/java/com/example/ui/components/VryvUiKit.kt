@@ -2099,24 +2099,29 @@ fun VryvFloatingBottomSheet(
  */
 @Composable
 fun VryvAvatarStack(
-    avatarResList: List<Int>,
+    avatarResList: List<Int> = emptyList(),
     modifier: Modifier = Modifier,
     size: Dp = 24.dp,
     borderColor: Color = VryvCard,
-    extraCountText: String? = null
+    extraCountText: String? = null,
+    avatars: List<Int>? = null,
+    avatarResIds: List<Int>? = null,
+    avatarSize: Dp? = null
 ) {
+    val items = avatars ?: avatarResIds ?: avatarResList
+    val s = avatarSize ?: size
     Row(
         modifier = modifier,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        avatarResList.forEachIndexed { index, res ->
+        items.forEachIndexed { index, res ->
             Image(
                 painter = painterResource(id = res),
                 contentDescription = null,
                 contentScale = ContentScale.Crop,
                 modifier = Modifier
                     .offset(x = (-7 * index).dp)
-                    .size(size)
+                    .size(s)
                     .clip(CircleShape)
                     .border(2.dp, borderColor, CircleShape)
             )
@@ -2124,11 +2129,11 @@ fun VryvAvatarStack(
         if (extraCountText != null) {
             Box(
                 modifier = Modifier
-                    .offset(x = (-7 * avatarResList.size).dp)
-                    .height(size)
-                    .clip(RoundedCornerShape(size / 2))
+                    .offset(x = (-7 * items.size).dp)
+                    .height(s)
+                    .clip(RoundedCornerShape(s / 2))
                     .background(VryvPink)
-                    .border(2.dp, borderColor, RoundedCornerShape(size / 2))
+                    .border(2.dp, borderColor, RoundedCornerShape(s / 2))
                     .padding(horizontal = 6.dp),
                 contentAlignment = Alignment.Center
             ) {
@@ -2144,36 +2149,3 @@ fun VryvAvatarStack(
     }
 }
 
-@Composable
-fun VryvAvatarStack(
-    avatars: List<Int>,
-    size: Dp = 24.dp,
-    borderColor: Color = VryvCard,
-    extraCountText: String? = null,
-    modifier: Modifier = Modifier
-) {
-    VryvAvatarStack(
-        avatarResList = avatars,
-        modifier = modifier,
-        size = size,
-        borderColor = borderColor,
-        extraCountText = extraCountText
-    )
-}
-
-@Composable
-fun VryvAvatarStack(
-    avatarResIds: List<Int>,
-    avatarSize: Dp = 24.dp,
-    borderColor: Color = VryvCard,
-    extraCountText: String? = null,
-    modifier: Modifier = Modifier
-) {
-    VryvAvatarStack(
-        avatarResList = avatarResIds,
-        modifier = modifier,
-        size = avatarSize,
-        borderColor = borderColor,
-        extraCountText = extraCountText
-    )
-}
